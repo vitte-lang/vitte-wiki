@@ -1,84 +1,13 @@
 {
-  "ui": {
-    "home": "Home",
-    "search": "Search",
-    "theme": "Toggle theme",
-    "language": "Language",
-    "version": "Version",
-    "editPage": "Edit this page",
-    "reportIssue": "Report issue",
-    "next": "Next",
-    "prev": "Previous",
-    "offlineNotice": "You are offline — some content may be missing.",
-    "lastUpdated": "Last updated"
-  },
-  "sidebar": [
-    {
-      "title": "Introduction",
-      "items": [
-        { "title": "Getting started", "route": "start" },
-        { "title": "Why Vitte?", "route": "why" },
-        { "title": "Install toolchain", "route": "install" },
-        { "title": "Hello world", "route": "hello" }
-      ]
-    },
-    {
-      "title": "Language tour",
-      "items": [
-        { "title": "Syntax tour", "route": "tour" },
-        { "title": "Ownership & borrowing", "route": "ownership" },
-        { "title": "Async & concurrency", "route": "concurrency" },
-        { "title": "FFI & unsafe", "route": "ffi" },
-        { "title": "Pattern matching", "route": "patterns-basic" },
-        { "title": "Macros & metaprogramming", "route": "macros" }
-      ]
-    },
-    {
-      "title": "Reference",
-      "items": [
-        { "title": "Language reference", "route": "reference" },
-        { "title": "Standard library", "route": "std" },
-        { "title": "EBNF grammar", "route": "ebnf" },
-        { "title": "Compiler lints", "route": "lints" },
-        { "title": "Formatting style", "route": "style" }
-      ]
-    },
-    {
-      "title": "Tooling",
-      "items": [
-        { "title": "Compiler & CLI", "route": "tooling" },
-        { "title": "Build & packages", "route": "build" },
-        { "title": "Editor integration", "route": "editors" },
-        { "title": "Testing & CI", "route": "testing-ci" }
-      ]
-    },
-    {
-      "title": "Guides",
-      "items": [
-        { "title": "Idioms & patterns", "route": "patterns" },
-        { "title": "Performance", "route": "performance" },
-        { "title": "Testing", "route": "testing" },
-        { "title": "Error handling", "route": "error-handling" },
-        { "title": "FAQ", "route": "faq" }
-      ]
-    },
-    {
-      "title": "Examples",
-      "items": [
-        { "title": "Basic examples", "route": "examples-basic" },
-        { "title": "Concurrency examples", "route": "examples-concurrency" },
-        { "title": "FFI examples", "route": "examples-ffi" },
-        { "title": "WebAssembly examples", "route": "examples-wasm" }
-      ]
-    },
-    {
-      "title": "Resources",
-      "items": [
-        { "title": "Changelog", "route": "changelog" },
-        { "title": "Roadmap", "route": "roadmap" },
-        { "title": "Community", "route": "community" },
-        { "title": "License", "route": "license" }
-      ]
-    }
+  "nav": [
+    { "group": "Getting started", "items": [
+      { "title": "Start",   "slug": "start"   },
+      { "title": "Tour",    "slug": "tour"    },
+      { "title": "Tooling", "slug": "tooling" }
+    ]},
+    { "group": "Reference", "items": [
+      { "title": "Language Reference", "slug": "reference" },
+      { "title": "FAQ", "slug": "faq" }
+    ]}
   ]
 }

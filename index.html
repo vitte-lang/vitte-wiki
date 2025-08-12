@@ -16,12 +16,16 @@
   <meta property="og:image" content="assets/og-cover.png" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
-  <link rel="preload" href="styles.css" as="style">
-  <link rel="stylesheet" href="styles.css" />
-  <!-- Helpful prefetches (adjust to your routes) -->
+
+  <!-- Prevent double fetch: preload then promote to stylesheet; noscript fallback -->
+  <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="styles.css"></noscript>
+
+  <!-- Optional prefetches (adjust) -->
   <link rel="prefetch" href="content/en/start.md" as="fetch" crossorigin>
   <link rel="prefetch" href="i18n/en.json" as="fetch" crossorigin>
   <link rel="prefetch" href="versions.json" as="fetch" crossorigin>
+
   <script>document.documentElement.classList.add('js')</script>
   <script type="application/ld+json">
   {
@@ -38,8 +42,8 @@
 <body>
 <a class="skip-link" href="#doc">Skip to content</a>
 
-<!-- SVG sprite (icons) -->
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+<!-- SVG sprite -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
   <symbol id="ic-github" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.57v-2.2c-3.34.73-4.04-1.61-4.04-1.61-.55-1.41-1.35-1.8-1.35-1.8-1.1-.76.09-.75.09-.75 1.22.09 1.87 1.25 1.87 1.25 1.08 1.86 2.83 1.32 3.52 1.01.11-.79.42-1.32.77-1.62-2.66-.3-5.47-1.34-5.47-5.95 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.62-2.81 5.65-5.49 5.95.43.37.82 1.1.82 2.22v3.29c0 .32.22.69.83.57A12 12 0 0 0 12 .5z"/></symbol>
   <symbol id="ic-moon" viewBox="0 0 24 24"><path fill="currentColor" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
   <symbol id="ic-print" viewBox="0 0 24 24"><path fill="currentColor" d="M19 8H5a3 3 0 0 0-3 3v4h4v5h12v-5h4v-4a3 3 0 0 0-3-3zm-3 12H8v-5h8zm3-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM18 3H6v4h12z"/></symbol>
@@ -61,15 +65,17 @@
       <div id="qResults" class="search-results" role="listbox" aria-label="Search results" aria-live="polite"></div>
       <span class="kbd"><kbd>/</kbd></span>
     </div>
+    <label class="visually-hidden" for="locale">Language</label>
     <select id="locale" aria-label="Language">
       <option value="en" selected>English</option>
       <option value="fr">Français</option>
     </select>
+    <label class="visually-hidden" for="version">Version</label>
     <select id="version" aria-label="Version"></select>
     <button id="theme" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">
       <svg width="18" height="18" aria-hidden="true"><use href="#ic-moon"/></svg>
     </button>
-    <a class="icon-btn" href="print.html" target="_blank" title="Print / PDF" aria-label="Print / PDF">
+    <a class="icon-btn" href="print.html" target="_blank" rel="noopener" title="Print / PDF" aria-label="Print / PDF">
       <svg width="18" height="18" aria-hidden="true"><use href="#ic-print"/></svg>
     </a>
     <a class="icon-btn" href="https://github.com/you/vitte-docs" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub repo">
@@ -78,25 +84,23 @@
   </div>
 </header>
 
-<aside id="sidebar" class="sidebar" role="navigation" aria-label="Main">
-  <nav class="nav" id="nav">
-    <!-- Populated dynamically from i18n + routes -->
-  </nav>
-  <footer class="side-footer" style="padding:.8rem">
-    <a id="editLink" target="_blank" rel="noopener">Edit this page</a>
-    <div class="muted" style="margin-top:.4rem">
-      <small>Offline <span id="offlineState" aria-live="polite" aria-atomic="true">ready</span></small>
-    </div>
-  </footer>
-</aside>
+<div class="layout">
+  <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main">
+    <nav class="nav" id="nav" aria-label="Primary"></nav>
+    <footer class="side-footer" style="padding:.8rem">
+      <a id="editLink" target="_blank" rel="noopener">Edit this page</a>
+      <div class="muted" style="margin-top:.4rem">
+        <small>Offline <span id="offlineState" aria-live="polite" aria-atomic="true">ready</span></small>
+      </div>
+    </footer>
+  </aside>
 
-<main id="main" class="content" role="main">
-  <nav id="breadcrumb" class="breadcrumb" aria-label="Breadcrumb"></nav>
-  <article id="doc" class="page" tabindex="-1">
-    <!-- Markdown content will be rendered here -->
-  </article>
-  <nav id="pager" class="pager" aria-label="Pagination"></nav>
-</main>
+  <main id="main" class="content" role="main">
+    <nav id="breadcrumb" class="breadcrumb" aria-label="Breadcrumb"></nav>
+    <article id="doc" class="page" tabindex="-1" aria-live="polite"></article>
+    <nav id="pager" class="pager" aria-label="Pagination"></nav>
+  </main>
+</div>
 
 <footer class="footer" role="contentinfo">
   <div class="container">
@@ -106,64 +110,43 @@
     <span class="sep">•</span>
     <a href="#/en/tooling">Tooling</a>
     <span class="sep">•</span>
+    <a href="#/en/faq">FAQ</a>
+    <span class="sep">•</span>
     <a href="#" id="reportIssue">Report issue</a>
   </div>
 </footer>
 
-<!-- Toasts / notifications -->
 <div id="toasts" class="hidden" aria-live="polite" aria-atomic="true"></div>
 
-<!-- ========= Templates used by app.js ========= -->
-<template id="tpl-nav-group">
-  <div class="group">
-    <div class="title"></div>
-    <div class="items"></div>
-  </div>
-</template>
-
-<template id="tpl-nav-item">
-  <a href="#" class="nav-link"></a>
-</template>
-
-<template id="tpl-breadcrumb">
-  <!-- app.js will fill breadcrumb items with separators -->
-</template>
-
+<!-- Templates for app.js -->
 <template id="tpl-pager">
   <a class="prev" href="#"><span aria-hidden="true">←</span> <span class="label"></span></a>
   <a class="next" href="#"><span class="label"></span> <span aria-hidden="true">→</span></a>
 </template>
 
-<template id="tpl-callout">
-  <div class="callout">
-    <div class="title"></div>
-    <div class="body"></div>
-  </div>
-</template>
-
-<template id="tpl-tabs">
-  <div class="tabs">
-    <div class="tablist" role="tablist" aria-label="Examples"></div>
-    <div class="panel" role="tabpanel"></div>
-  </div>
-</template>
-
-<!-- Minimal offline banner (toggle by app.js) -->
+<!-- Offline banner -->
 <div id="offlineBanner" class="callout warn hidden" role="status" aria-live="assertive" style="position:fixed;left:1rem;bottom:1rem;max-width:22rem">
   <div class="title">Offline</div>
   <div class="body">You’re viewing cached docs. Some pages may be unavailable.</div>
 </div>
 
-<!-- Basic SW registration fallback (your app.js can also handle it) -->
 <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
-</script>
+  // Detect BASE_URL for GitHub Pages (works at root or subpath)
+  (function(){
+    var p = location.pathname;
+    // Drop trailing file and slash -> base path
+    p = p.replace(/\/index\.html$/, '');
+    if (!p.endsWith('/')) p = p + '/';
+    window.__BASE_URL__ = p.replace(/\/$/, '');
+  })();
 
-<!-- Keyboard shortcuts (announce) -->
+  if ('serviceWorker' in navigator) {
+    // Register SW at the same base (so scope is correct on GH Pages)
+    var sw = (window.__BASE_URL__||'') + '/sw.js';
+    navigator.serviceWorker.register(sw).catch(()=>{});
+  }
+</script>
 <script>
-  // Show hint for "/" focus search when first loaded
   if (!sessionStorage.getItem('hintShown')) {
     const t = document.getElementById('toasts');
     t.classList.remove('hidden');
@@ -172,8 +155,6 @@ if ('serviceWorker' in navigator) {
     sessionStorage.setItem('hintShown','1');
   }
 </script>
-
-<!-- Main application -->
-<script src="app.js" type="module"></script>
+<script src="app.js" type="module" defer></script>
 </body>
 </html>
