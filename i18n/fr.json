@@ -1,0 +1,84 @@
+{
+  "ui": {
+    "home": "Accueil",
+    "search": "Recherche",
+    "theme": "Changer de thème",
+    "language": "Langue",
+    "version": "Version",
+    "editPage": "Modifier cette page",
+    "reportIssue": "Signaler un problème",
+    "next": "Suivant",
+    "prev": "Précédent",
+    "offlineNotice": "Vous êtes hors ligne — certains contenus peuvent être manquants.",
+    "lastUpdated": "Dernière mise à jour"
+  },
+  "sidebar": [
+    {
+      "title": "Introduction",
+      "items": [
+        { "title": "Bien démarrer", "route": "start" },
+        { "title": "Pourquoi Vitte ?", "route": "why" },
+        { "title": "Installer la toolchain", "route": "install" },
+        { "title": "Hello world", "route": "hello" }
+      ]
+    },
+    {
+      "title": "Découverte du langage",
+      "items": [
+        { "title": "Tour de la syntaxe", "route": "tour" },
+        { "title": "Ownership et emprunts", "route": "ownership" },
+        { "title": "Async et concurrence", "route": "concurrency" },
+        { "title": "FFI et unsafe", "route": "ffi" },
+        { "title": "Correspondance de motifs", "route": "patterns-basic" },
+        { "title": "Macros et métaprogrammation", "route": "macros" }
+      ]
+    },
+    {
+      "title": "Référence",
+      "items": [
+        { "title": "Référence du langage", "route": "reference" },
+        { "title": "Bibliothèque standard", "route": "std" },
+        { "title": "Grammaire EBNF", "route": "ebnf" },
+        { "title": "Lints du compilateur", "route": "lints" },
+        { "title": "Style de formatage", "route": "style" }
+      ]
+    },
+    {
+      "title": "Outils",
+      "items": [
+        { "title": "Compilateur et CLI", "route": "tooling" },
+        { "title": "Build et paquets", "route": "build" },
+        { "title": "Intégration éditeurs", "route": "editors" },
+        { "title": "Tests et CI", "route": "testing-ci" }
+      ]
+    },
+    {
+      "title": "Guides",
+      "items": [
+        { "title": "Idiomes et patterns", "route": "patterns" },
+        { "title": "Performance", "route": "performance" },
+        { "title": "Tests", "route": "testing" },
+        { "title": "Gestion des erreurs", "route": "error-handling" },
+        { "title": "FAQ", "route": "faq" }
+      ]
+    },
+    {
+      "title": "Exemples",
+      "items": [
+        { "title": "Exemples de base", "route": "examples-basic" },
+        { "title": "Exemples de concurrence", "route": "examples-concurrency" },
+        { "title": "Exemples FFI", "route": "examples-ffi" },
+        { "title": "Exemples WebAssembly", "route": "examples-wasm" }
+      ]
+    },
+    {
+      "title": "Ressources",
+      "items": [
+        { "title": "Changelog", "route": "changelog" },
+        { "title": "Feuille de route", "route": "roadmap" },
+        { "title": "Communauté", "route": "community" },
+        { "title": "Licence", "route": "license" }
+      ]
+    }
+  ]
+}

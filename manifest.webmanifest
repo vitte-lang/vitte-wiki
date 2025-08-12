@@ -1,0 +1,11 @@
+{
+  "name": "Vitte Docs",
+  "short_name": "VitteDocs",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0f1522",
+  "theme_color": "#0f1522",
+  "icons": [
+    { "src": "assets/logo.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
