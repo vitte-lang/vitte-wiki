@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vitte Language — Tooling Guide (Ultra)</title>
+  <meta name="color-scheme" content="light dark">
+  <link rel="stylesheet" href="../assets/doc.css">
+</head>
+<body>
+  <header class="page-header">
+    <nav class="breadcrumbs">
+      <a href="../index.html">Index</a> / <span>Tooling Guide</span>
+    </nav>
+    <h1>Vitte Language — Tooling Guide (Ultra)</h1>
+    <p class="lead">Welcome to the ultimate tooling guide for the Vitte ecosystem — everything you need to build, test, harden, ship, and maintain Vitte software at scale.</p>
+
+    <div class="tools">
+      <label for="q" class="visually-hidden">Search</label>
+      <input id="q" type="search" placeholder="Search in page (Ctrl+/)" aria-label="Search in page">
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="toc" aria-label="Table of contents">
+      <strong>Contents</strong>
+      <nav id="toc"></nav>
+    </aside>
+
+    <main id="article">
+      <hr>
+
+      <h2>1. Overview</h2>
+      <ul>
+        <li><strong>vittec</strong> — optimizing compiler (IR, codegen, LTO)</li>
+        <li><strong>vitte</strong> — project CLI (new/run/build/test/fmt/lint/doc/pkg/release…)</li>
+        <li><strong>vitstd</strong> — standard library</li>
+        <li><strong>vitpkg</strong> — package manager (deps, features, lock, vendor)</li>
+        <li><strong>vitbuild</strong> — build system (profiles, targets, scripts, hooks)</li>
+        <li><strong>vitls</strong> — LSP (autocomplete, hover, code actions, diagnostics)</li>
+        <li><strong>vitdoc</strong> — documentation generator (API + MD)</li>
+        <li><strong>vitcov</strong> — coverage (lines/branches), gates</li>
+        <li><strong>vitbench</strong> — micro/meso benchmarks</li>
+        <li><strong>vitprof</strong> — profiler (cpu/mem) + flamegraphs</li>
+        <li><strong>vitaudit</strong> — security audit (advisories, licenses)</li>
+        <li><strong>vitfmt</strong> — formatter (also via <code>vitte fmt</code>)</li>
+      </ul>
+
+      <h2>2. Install</h2>
+      <h3>2.1 Official</h3>
+      <pre><code>curl -sSL https://get.vitte.dev | sh
+</code></pre>
+      <h3>2.2 Manual</h3>
+      <ol>
+        <li>Download from <code>vitte.dev/downloads</code></li>
+        <li>Extract and add <code>bin</code> to <code>PATH</code></li>
+      </ol>
+      <h3>2.3 Package managers (community)</h3>
+      <ul>
+        <li>Homebrew: <code>brew install vitte</code></li>
+        <li>Scoop: <code>scoop install vitte</code></li>
+        <li>Arch AUR: <code>yay -S vitte</code></li>
+        <li>Nix: <code>nix-env -iA nixpkgs.vitte</code></li>
+      </ul>
+      <h3>2.4 Offline / Air-gapped</h3>
+      <ol>
+        <li>On a connected machine: <code>vitpkg vendor --all</code> (locks &amp; vendored deps)</li>
+        <li>Transférer l’archive <code>vendor/</code> + toolchain</li>
+        <li>Build avec <code>VITTE_OFFLINE=1</code></li>
+      </ol>
+
+      <h2>3. Project Layout</h2>
+      <pre><code>my_app/
+├─ vitpkg.toml            # manifest: name, version, deps, features
+├─ vitbuild.toml          # profiles, targets, scripts, hooks, env
+├─ src/
+│  ├─ main.vt             # entry point
+│  └─ lib.vt              # library code
+├─ tests/                 # unit/integration tests
+├─ benches/               # benchmarks
+├─ examples/              # runnable samples
+├─ docs/                  # extra docs (vitdoc output)
+└─ .vitte/                # cache, lockfiles (auto)
+</code></pre>
+
+      <h2>4. CLI (vitte)</h2>
+      <p>Run <code>vitte help</code> for all commands.</p>
+      <h3>4.1 Create &amp; Run</h3>
+      <pre><code>vitte new my_app
+cd my_app
+vitte run
+</code></pre>
+      <h3>4.2 Build profiles</h3>
+      <pre><code>vitte build                 # dev (fast compile)
+vitte build --release       # release (O3/LTO)
+vitte build --profile perf  # custom profile
+</code></pre>
+      <h3>4.3 Test &amp; Coverage</h3>
+      <pre><code>vitte test
+vitte test --filter "http" --nocapture
+vitcov run -- vitte test &amp;&amp; vitcov report --open
+vitcov check --threshold 85
+</code></pre>
+      <h3>4.4 Format &amp; Lint</h3>
+      <pre><code>vitte fmt
+vitte lint
+vitte lint --fix
+</code></pre>
+      <h3>4.5 Docs</h3>
+      <pre><code>vitdoc build --theme clean --open
+</code></pre>
+      <h3>4.6 Bench &amp; Profile</h3>
+      <pre><code>vitbench run --filter "json_*"
+vitprof record -- ./target/release/my_app
+vitprof flamegraph --open
+</code></pre>
+
+      <h2>5. Compiler (vittec)</h2>
+      <ul>
+        <li>Optimisations (inlining, LICM, vectorization), LTO (thin/fat)</li>
+        <li>Strict safety (ownership, borrows, types)</li>
+        <li>Cross-compilation (<code>--target</code>)</li>
+      </ul>
+      <pre><code>vittec src/main.vt -o bin/app --target x86_64-linux-gnu --opt-level 3 --lto thin
+vittec src/lib.vt -c --emit-ir --warn=all
+</code></pre>
+
+      <h2>6. Package Manager (vitpkg)</h2>
+      <h3>6.1 Manifest (vitpkg.toml)</h3>
+      <pre><code>[package]
+name = "my_app"
+version = "1.2.0"
+edition = "2025"
+license = "MIT"
+description = "Sample Vitte app"
+
+[dependencies]
+serde = "^1.0"
+httpx  = { version = "0.5", features = ["tls"] }
+
+[dev-dependencies]
+quickcheck = "1"
+
+[features]
+default = ["tls"]
+tls = ["httpx/tls"]
+
+[profile.dev]
+opt-level = 0
+debug = true
+overflow-checks = true
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"
+</code></pre>
+      <h3>6.2 Commands</h3>
+      <pre><code>vitpkg add serde
+vitpkg add httpx --feature tls
+vitpkg update
+vitpkg tree
+vitpkg audit --advisories --licenses
+vitpkg vendor                  # vendor deps (offline)
+vitpkg publish                 # publish to registry
+</code></pre>
+      <h3>6.3 Private registries</h3>
+      <pre><code>[registries]
+corp = "https://pkg.corp.local/index"
+
+[source]
+default = "corp"
+</code></pre>
+
+      <h2>7. Build System (vitbuild)</h2>
+      <p>Profiles, targets, scripts, env, hooks, workspaces.</p>
+      <h3>7.1 vitbuild.toml</h3>
+      <pre><code>[project]
+workspace = true
+
+[target."x86_64-unknown-linux-gnu"]
+linker = "clang"
+strip = true
+
+[target."aarch64-apple-darwin"]
+sdk = "macos"
+
+[profile.debug]
+inherits = "dev"
+debug = true
+
+[profile.perf]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+
+[scripts]
+assets = "node tools/build-assets.mjs"
+genver = "scripts/gen_version.sh"
+
+[hooks]
+prebuild = "vitpkg audit"
+postbuild = "vitdoc build"
+
+[env]
+VITTE_LOG = "info"
+RUST_BACKTRACE = "1"
+</code></pre>
+      <h3>7.2 Cross-compile</h3>
+      <pre><code>vitte build --target x86_64-pc-windows-msvc
+vitte build --target aarch64-apple-darwin --release
+</code></pre>
+
+      <h2>8. Editors &amp; LSP (vitls)</h2>
+      <pre><code>vitte lsp install
+vitte lsp doctor
+</code></pre>
+      <ul>
+        <li>VS Code: “Vitte” extension (auto-detect <code>vitls</code>)</li>
+        <li>JetBrains: Vitte plugin, configure <code>vitls</code></li>
+        <li>Neovim: <code>nvim-lspconfig</code> + <code>vitls</code></li>
+        <li>Emacs: <code>lsp-mode</code> + <code>vitls</code></li>
+      </ul>
+      <p><strong>Formatter &amp; Lints</strong> — style is enforced by <code>vitte fmt</code> + <code>vitte lint</code> (CI gates).</p>
+
+      <h2>9. CI/CD</h2>
+      <h3>9.1 GitHub Actions (matrix + cache + artifacts + release)</h3>
+      <pre><code>name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        target: [x86_64, aarch64]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: .vitte
+          key: vitte-${{ runner.os }}-${{ hashFiles('vitpkg.lock') }}
+      - run: curl -sSL https://get.vitte.dev | sh
+      - run: vitte build --release --target ${{ matrix.target }}
+      - run: vitte test --target ${{ matrix.target }}
+      - run: mkdir -p dist &amp;&amp; vitte package --target ${{ matrix.target }} --out dist/
+      - uses: actions/upload-artifact@v4
+        with: { name: app-${{ matrix.os }}-${{ matrix.target }}, path: dist/ }
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: ./artifacts }
+      - run: (cd artifacts &amp;&amp; sha256sum * &gt; SHA256SUMS)
+      - uses: softprops/action-gh-release@v2
+        with: { files: artifacts/** }
+</code></pre>
+
+      <h3>9.2 GitLab CI (cache + artifacts)</h3>
+      <pre><code>stages: [build, test, package]
+variables:
+  VITTE_LOG: info
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths: [".vitte/"]
+
+build:
+  stage: build
+  image: alpine:latest
+  script:
+    - wget -qO- https://get.vitte.dev | sh
+    - vitte build --release
+  artifacts: { paths: ["target/release/"], expire_in: 1 week }
+
+test:
+  stage: test
+  script:
+    - vitte test
+</code></pre>
+
+      <h3>9.3 Azure Pipelines (Windows + Linux)</h3>
+      <pre><code>trigger: [ main ]
+pool: { vmImage: 'ubuntu-latest' }
+steps:
+  - checkout: self
+  - bash: curl -sSL https://get.vitte.dev | sh
+  - bash: vitte build --release
+  - bash: vitte test
+</code></pre>
+
+      <h2>10. Debugging, Profiling, Sanitisers</h2>
+      <pre><code># Debug symbols
+vitte build --debug
+
+# GDB/LLDB
+gdb ./target/debug/my_app
+lldb ./target/debug/my_app
+
+# Profiling + Flamegraph
+vitprof record -- ./target/release/my_app
+vitprof flamegraph --open
+
+# Sanitisers (build flags)
+vitte build --sanitizer addr
+vitte build --sanitizer ub
+</code></pre>
+
+      <h2>11. Coverage &amp; Quality Gates</h2>
+      <pre><code>vitcov run -- vitte test
+vitcov report --format lcov --out coverage.lcov
+vitcov check --threshold 80
+</code></pre>
+
+      <h2>12. Security &amp; Supply Chain</h2>
+      <pre><code>vitpkg audit --advisories --licenses
+vitpkg deny --license "GPL-3.0-only"
+vitte sbom --format spdx --out sbom.spdx.json
+</code></pre>
+      <p>Tips: pin deps, review transitive deps (via <code>vitpkg tree</code>), vendor for air-gapped builds.</p>
+
+      <h2>13. Reproducible Builds</h2>
+      <ul>
+        <li>Lock deps (<code>vitpkg.lock</code>)</li>
+        <li>Vendor (<code>vitpkg vendor</code>)</li>
+        <li>Deterministic flags (<code>codegen-units=1</code>, fixed seeds, <code>strip</code>)</li>
+      </ul>
+
+      <h2>14. Packaging &amp; Distribution</h2>
+      <h3>14.1 Bundles</h3>
+      <pre><code>vitte package --format zip --out dist/
+vitte package --format tar.xz --out dist/
+</code></pre>
+      <h3>14.2 Containers</h3>
+      <pre><code>FROM vitte:latest AS build
+WORKDIR /work
+COPY . .
+RUN vitte build --release
+FROM gcr.io/distroless/cc
+COPY --from=build /work/target/release/my_app /app
+ENTRYPOINT ["/app"]
+</code></pre>
+      <h3>14.3 Homebrew/Scoop taps (release automation)</h3>
+      <pre><code># Homebrew formula (sketch)
+brew tap myorg/vitte
+brew install myorg/vitte/my_app
+
+# Scoop manifest (sketch)
+scoop bucket add myorg https://github.com/myorg/scoop-bucket
+scoop install my_app
+</code></pre>
+
+      <h2>15. Versioning &amp; Release Automation</h2>
+      <pre><code>vitte version patch     # bump semver
+vitte changelog --since v1.1.0 --out CHANGELOG.md
+vitte release --tag --push
+</code></pre>
+
+      <h2>16. Pre-commit Hooks</h2>
+      <pre><code># .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: vitte-fmt
+        name: vitte fmt
+        entry: vitte fmt
+        language: system
+      - id: vitte-lint
+        name: vitte lint
+        entry: vitte lint
+        language: system
+</code></pre>
+
+      <h2>17. Workspaces &amp; Monorepos</h2>
+      <pre><code># vitpkg.toml (root)
+[workspace]
+members = ["crates/*", "apps/*"]
+</code></pre>
+
+      <h2>18. Build Scripts &amp; Lifecycle Hooks</h2>
+      <ul>
+        <li>Scripts: <code>[scripts]</code> → invocables via <code>vitte run-script &lt;name&gt;</code></li>
+        <li>Hooks: <code>[hooks]</code> → <code>prebuild</code>, <code>postbuild</code>, <code>pretest</code>, <code>posttest</code>, <code>prepublish</code>…</li>
+      </ul>
+      <pre><code>[scripts]
+gen = "scripts/gen_version.sh"
+assets = "node tools/build-assets.mjs"
+
+[hooks]
+prebuild = "vitpkg audit"
+postbuild = "vitdoc build"
+prepublish = "vitpkg vendor"
+</code></pre>
+
+      <h2>19. Env Vars</h2>
+      <table>
+        <thead><tr><th>Var</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>VITTE_LOG</td><td>trace|debug|info|warn|error</td></tr>
+          <tr><td>VITTE_TARGET</td><td>default cross target</td></tr>
+          <tr><td>VITTE_PROFILE</td><td>dev|release|perf</td></tr>
+          <tr><td>VITTE_OFFLINE</td><td>use vendored deps only</td></tr>
+        </tbody>
+      </table>
+
+      <h2>20. Troubleshooting (Greatest Hits)</h2>
+      <ul>
+        <li><strong>Linker not found</strong> → install system toolchain (clang/lld), set <code>[target.*].linker</code></li>
+        <li><strong>Dep conflicts</strong> → <code>vitpkg tree</code>, pin, regenerate lock</li>
+        <li><strong>LSP slow</strong> → <code>vitte lsp doctor</code>, clear <code>.vitte/cache</code></li>
+        <li><strong>Cross-compile fails</strong> → SDK/headers/CRT for target; try <code>--target</code> + proper <code>linker</code></li>
+        <li><strong>Non-repro builds</strong> → vendor deps, fix profile flags, strip symbols deterministically</li>
+      </ul>
+
+      <h2>21. Makefile (optional wrapper)</h2>
+      <pre><code>build:
+\tvitte build --release
+test:
+\tvitte test
+fmt:
+\tvitte fmt &amp;&amp; vitte lint
+run:
+\tvitte run
+package:
+\tvitte package --format zip --out dist/
+</code></pre>
+
+      <h2>22. End-to-End Example</h2>
+      <pre><code># Scaffold
+vitte new hello
+cd hello
+
+# Add deps
+vitpkg add httpx serde
+
+# Build &amp; test
+vitte build --release
+vitte test
+
+# Docs &amp; coverage
+vitdoc build
+vitcov run -- vitte test &amp;&amp; vitcov report --open
+
+# Package &amp; release
+vitte package --format zip --out dist/
+vitte version minor &amp;&amp; vitte release --tag --push
+</code></pre>
+
+      <h2>23. Full Example: vitpkg.toml</h2>
+      <pre><code>[package]
+name = "acme-api"
+version = "0.9.0"
+edition = "2025"
+license = "Apache-2.0"
+
+[dependencies]
+serde = "^1.0"
+log = "0.2"
+httpx = { version = "0.5", features = ["tls","http2"] }
+
+[dev-dependencies]
+fakeit = "0.4"
+
+[features]
+default = ["tls"]
+tls = ["httpx/tls"]
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+panic = "abort"
+strip = "symbols"
+codegen-units = 1
+</code></pre>
+
+      <h2>24. Full Example: vitbuild.toml</h2>
+      <pre><code>[project]
+workspace = true
+
+[target."x86_64-unknown-linux-gnu"]
+linker = "clang"
+
+[target."aarch64-apple-darwin"]
+sdk = "macos"
+
+[profile.perf]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+
+[scripts]
+prebuild = "scripts/check_env.sh"
+assets = "node tools/build-assets.mjs"
+
+[hooks]
+prebuild = "vitpkg audit"
+postbuild = "vitdoc build"
+
+[env]
+VITTE_LOG = "info"
+</code></pre>
+
+      <h2>25. FFI / ABI / Repr / Align (quick peek)</h2>
+      <pre><code>@repr(c)
+extern(c) {
+  fn puts(s:*const u8) -&gt; i32
+}
+
+@repr(c) @align(8)
+struct Header { len:u32, kind:u32 }
+
+@repr(packed)
+struct Packed { a:u16, b:u32, c:u8 }
+</code></pre>
+
+      <hr>
+      <p><em>Quick links:</em> Jump to <a href="syntax.html">Syntax</a>, <a href="reference.html">Reference</a>, <a href="tour.html">Tour</a>, <a href="faq.html">FAQ</a>. Press <kbd>Ctrl</kbd>+<kbd>/</kbd> to search.</p>
+    </main>
+  </div>
+
+  <script src="../assets/doc.js" defer></script>
+</body>
+</html>

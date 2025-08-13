@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Vitte FAQ</title>
+</head>
+<body>
+
+<h1>Vitte FAQ</h1>
+<p>Welcome to the Vitte Frequently Asked Questions. This page addresses the most common questions developers ask when starting or using Vitte.</p>
+<p><strong>Last updated:</strong> 2025-08-12</p>
+
+<h2>General</h2>
+
+<h3>Q: What is Vitte?</h3>
+<p><strong>A:</strong> Vitte is a modern systems programming language combining the readability of Python, the safety of Rust, the performance of C/C++, and the low-level control of assembly. It is designed for both beginners and experts aiming to create robust, fast, and scalable software.</p>
+
+<h3>Q: Is Vitte open-source?</h3>
+<p><strong>A:</strong> Yes. Vitte is fully open-source and licensed under a permissive license, allowing commercial and personal use.</p>
+
+<h3>Q: What platforms does Vitte support?</h3>
+<p><strong>A:</strong> Vitte can target Linux, macOS, Windows, BSD systems, as well as embedded devices and microcontrollers.</p>
+
+<h2>Installation</h2>
+
+<h3>Q: How do I install Vitte?</h3>
+<p><strong>A:</strong> Download the latest toolchain from the official repository and follow the installation instructions for your OS.</p>
+<p>Example on Linux:</p>
+<pre><code>curl -fsSL https://vitte-lang.org/install.sh | sh</code></pre>
+
+<h3>Q: Does Vitte require a specific compiler?</h3>
+<p><strong>A:</strong> Yes, Vitte uses its own compiler but internally relies on LLVM for code generation.</p>
+
+<h2>Syntax &amp; Features</h2>
+
+<h3>Q: How different is Vitte from Rust or Python?</h3>
+<p><strong>A:</strong> Vitte borrows Rust’s memory safety and ownership model but uses a more flexible and Python-like syntax. It also supports direct inline assembly.</p>
+
+<h3>Q: Does Vitte have garbage collection?</h3>
+<p><strong>A:</strong> No. Vitte uses deterministic memory management with ownership and borrowing rules.</p>
+
+<h3>Q: Does Vitte support async programming?</h3>
+<p><strong>A:</strong> Yes. Vitte includes built-in <code>async/await</code> syntax, channels, and concurrency primitives.</p>
+
+<h2>Development</h2>
+
+<h3>Q: How do I create a new project?</h3>
+<pre><code>vitte new my_project
+cd my_project
+vitte run</code></pre>
+
+<h3>Q: Can I use C libraries in Vitte?</h3>
+<p><strong>A:</strong> Yes, via its FFI (<code>extern(c) { ... }</code>) system.</p>
+
+<h3>Q: Is cross-compilation supported?</h3>
+<p><strong>A:</strong> Yes, using <code>vitte build --target &lt;platform&gt;</code>.</p>
+
+<h2>Debugging &amp; Testing</h2>
+
+<h3>Q: Does Vitte have built-in testing?</h3>
+<p><strong>A:</strong> Yes. You can write tests with the <code>@test</code> attribute and run them using <code>vitte test</code>.</p>
+
+<h3>Q: How do I debug Vitte code?</h3>
+<p><strong>A:</strong> Use <code>vitte build --debug</code> and run it inside gdb, lldb, or with Vitte’s integrated debugger.</p>
+
+<h2>Community &amp; Contribution</h2>
+
+<h3>Q: Where can I ask for help?</h3>
+<p><strong>A:</strong> You can join our official forum, Discord, or GitHub Discussions.</p>
+
+<h3>Q: How can I contribute?</h3>
+<p><strong>A:</strong> Fork the repository, make your changes, and submit a pull request. See the <code>CONTRIBUTING.md</code> file for more details.</p>
+
+</body>
+</html>

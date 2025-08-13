@@ -1,0 +1,474 @@
+<h1>Vitte Language Reference — Beginner → Intermediate++ (Super-Complete)</h1>
+<p>This is the authoritative reference for <strong>Vitte</strong> — readable like Python, safe like Rust, close-to-metal like C/ASM, pragmatic like Go. Beginner-friendly, intermediate-deep.</p>
+
+<a id="top"></a>
+<nav aria-label="On this page" class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#intro">1. Introduction & Goals</a></li>
+    <li><a href="#lexical">2. Lexical Grammar & Tokens</a></li>
+    <li><a href="#keywords">3. Keywords & Reserved Words</a></li>
+    <li><a href="#literals">4. Literals, Escapes & Numeric Suffixes</a></li>
+    <li><a href="#ops">5. Operators & Precedence (full table)</a></li>
+    <li><a href="#exprs">6. Expressions & Blocks</a></li>
+    <li><a href="#types">7. Types (Scalars → Enums, Aliases, Newtypes)</a></li>
+    <li><a href="#bind">8. Bindings, Mutability, Shadowing</a></li>
+    <li><a href="#control">9. Control Flow (if/loops/match, let-else)</a></li>
+    <li><a href="#funcs">10. Functions, Methods, Associated fns</a></li>
+    <li><a href="#ownership">11. Ownership, Borrowing, Lifetimes</a></li>
+    <li><a href="#modules">12. Modules, Paths, Visibility, Re-exports</a></li>
+    <li><a href="#generics">13. Generics, Bounds, Where, Associated Types</a></li>
+    <li><a href="#traits">14. Traits, Trait Objects, Operator Overloading</a></li>
+    <li><a href="#pattern">15. Pattern Matching (advanced)</a></li>
+    <li><a href="#collections">16. Collections, Iterators, Closures</a></li>
+    <li><a href="#errors">17. Error Handling (Option/Result/try, custom errors)</a></li>
+    <li><a href="#panic">18. Panics, Abort Strategy & Defer/Drop</a></li>
+    <li><a href="#const">19. Compile-time & Const Evaluation (incl. const generics)</a></li>
+    <li><a href="#macros">20. Macros (hygiene, TT patterns) & Built-ins</a></li>
+    <li><a href="#attrs">21. Attributes & Conditional Compilation</a></li>
+    <li><a href="#memory">22. Memory Model, Atomics & Sync Primitives</a></li>
+    <li><a href="#concurrency">23. Threads, Channels, Async/await, Streams & Timers</a></li>
+    <li><a href="#ffi">24. FFI, ABI, Data Layout (repr/align/packed), Unions & Bitflags</a></li>
+    <li><a href="#testing">25. Testing (unit/doc/property/snapshot)</a></li>
+    <li><a href="#perf">26. Performance Guidelines</a></li>
+    <li><a href="#style">27. Style & Naming</a></li>
+    <li><a href="#project">28. Project Layout & Workspaces</a></li>
+    <li><a href="#glossary">29. Glossary</a></li>
+  </ol>
+</nav>
+
+<hr>
+
+<h2 id="intro">1. Introduction & Goals</h2>
+<ul>
+  <li>Use cases: kernels, embedded/IoT, game engines, WebAssembly, servers.</li>
+  <li>Goals: lightweight syntax; memory safety w/o GC; first-class C/ASM interop; aggressive optimization (LLVM-like).</li>
+  <li>Philosophy: <em>explicit & predictable</em>, <em>zero-cost abstractions</em>, <em>tooling-first</em>.</li>
+</ul>
+
+<h2 id="lexical">2. Lexical Grammar & Tokens</h2>
+<ul>
+  <li><strong>Identifiers</strong>: <code>[A-Za-z_][A-Za-z0-9_]*</code> (Unicode letters allowed).</li>
+  <li><strong>Whitespace</strong>: spaces, tabs, newlines.</li>
+  <li><strong>Comments</strong>: line <code>// ...</code> and block <code>/* ... */</code> (nestable).</li>
+  <li><strong>Doc comments</strong>: <code>///</code> above items; tested by doc-tests.</li>
+  <li><strong>String escapes</strong>: <code>\n \t \r \" \\ \0 \u{XXXX}</code>.</li>
+  <li><strong>Char</strong>: single Unicode scalar <code>'λ'</code>.</li>
+</ul>
+
+<h2 id="keywords">3. Keywords & Reserved Words</h2>
+<p><strong>Keywords</strong> (non-identifiable):</p>
+<pre><code>do fn let mut const static struct enum trait impl use pub mod match if else for while loop break continue
+return async await spawn try catch extern unsafe type where Box Vec Arc Rc
+</code></pre>
+<p><strong>Reserved</strong>: <code>move yield default typeof sizeof union</code></p>
+
+<h2 id="literals">4. Literals, Escapes & Numeric Suffixes</h2>
+<pre><code>// Integers
+0  42  1_000  0xFF  0b1010  0o755
+// Floats
+3.14  1.0e-3
+// Suffixes (hints)
+42i64   255u8   1.0f32
+// Strings & interpolation
+let who = "world"
+println!("Hello, {}", who)!
+println!("x={x}, y={y}", x=1, y=2)!
+println!(stringify!(1 + 2 * 3))!
+</code></pre>
+
+<h2 id="ops">5. Operators & Precedence (full table)</h2>
+<table>
+  <thead><tr><th>Precedence (high→low)</th><th>Operators</th><th>Assoc.</th></tr></thead>
+  <tbody>
+    <tr><td>Member/Path</td><td><code>.</code> <code>::</code></td><td>left</td></tr>
+    <tr><td>Postfix</td><td>call <code>()</code>, index <code>[]</code>, borrow <code>&amp;</code>/<code>&amp;mut</code></td><td>left</td></tr>
+    <tr><td>Unary</td><td><code>!</code> <code>~</code> <code>-</code> <code>*</code> (deref)</td><td>right</td></tr>
+    <tr><td>Mul</td><td><code>*</code> <code>/</code> <code>%</code></td><td>left</td></tr>
+    <tr><td>Add</td><td><code>+</code> <code>-</code></td><td>left</td></tr>
+    <tr><td>Shift</td><td><code>&lt;&lt;</code> <code>&gt;&gt;</code></td><td>left</td></tr>
+    <tr><td>Relational</td><td><code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code></td><td>left</td></tr>
+    <tr><td>Equality</td><td><code>==</code> <code>!=</code></td><td>left</td></tr>
+    <tr><td>Bitwise</td><td><code>&amp;</code> <code>^</code> <code>|</code></td><td>left</td></tr>
+    <tr><td>Logical</td><td><code>&amp;&amp;</code> <code>||</code></td><td>left</td></tr>
+    <tr><td>Range</td><td><code>a..b</code> <code>a..=b</code></td><td>n/a</td></tr>
+    <tr><td>Assign</td><td><code>=</code> <code>+=</code> <code>-=</code> <code>*=</code> <code>/=</code> <code>&amp;=</code> <code>|=</code> <code>^=</code> <code>&lt;&lt;=</code> <code>&gt;&gt;=</code></td><td>right</td></tr>
+  </tbody>
+</table>
+
+<h2 id="exprs">6. Expressions & Blocks</h2>
+<ul>
+  <li>Un bloc retourne sa dernière expression (sans <code>;</code>).</li>
+  <li><code>if</code> est expression : <code>let x = if ok { 1 } else { 0 }</code>.</li>
+</ul>
+<pre><code>// Struct init & update
+struct Point { x:f64, y:f64 }
+let p = Point{ x:1.0, y:2.0 }
+let p2 = Point{ x:3.0, ..p }  // copie des champs restants
+
+// Ranges & slicing
+let a = [1,2,3,4,5]
+let mid = &amp;a[1..4]
+</code></pre>
+
+<h2 id="types">7. Types (Scalars → Enums, Aliases, Newtypes)</h2>
+<pre><code>let i: i32 = -7
+let u: u64 = 123
+let f: f64 = 0.125
+let b: bool = true
+let c: char = 'λ'
+
+let s = String::from("hi"); let r:&amp;str = &amp;s
+let arr: [i32;3] = [1,2,3]; let sl:&amp;[i32] = &amp;arr[1..]
+let tup = (200, "OK"); let (code, msg) = tup
+
+struct Point { x:f64, y:f64 }
+enum Color { Red, Green, Blue }
+type Bytes = Vec[u8]
+struct UserId(u64)  // newtype
+</code></pre>
+
+<h2 id="bind">8. Bindings, Mutability, Shadowing</h2>
+<pre><code>let name = "Alice"
+let mut n = 0
+const PI:f64 = 3.14159
+static mut G:i32 = 10   // unsafe global
+let speed = 90
+let speed = speed * 1.1 // shadowing
+</code></pre>
+
+<h2 id="control">9. Control Flow (if/loops/match, let-else)</h2>
+<pre><code>let x = if cond { 1 } else { 0 }
+
+for i in 0..10 { println!(i)! }
+while x &gt; 0 { x -= 1 }
+loop { break }
+
+match v {
+  0 =&gt; println!("zero")!,
+  1..=9 if v % 2 == 0 =&gt; println!("even digit")!,
+  _ =&gt; println!("other")!,
+}
+
+// let-else / if-let / while-let
+let Some(head) = a.first() else { return }
+if let Some(x) = opt { println!(x)! }
+while let Some(t) = it.next() { consume(t) }
+</code></pre>
+
+<h2 id="funcs">10. Functions, Methods, Associated fns</h2>
+<pre><code>fn add(a:i32, b:i32) -&gt; i32 { a + b }
+do log(msg:&amp;str) { println!(msg)! }
+
+struct Vec2 { x:f64, y:f64 }
+impl Vec2 {
+  pub fn new(x:f64,y:f64) -&gt; Self { Self{ x, y } }
+  pub fn len(&amp;self) -&gt; f64 { (self.x*self.x + self.y*self.y).sqrt() }
+  pub fn translate(&amp;mut self, dx:f64, dy:f64) { self.x+=dx; self.y+=dy }
+}
+</code></pre>
+
+<h2 id="ownership">11. Ownership, Borrowing, Lifetimes</h2>
+<pre><code>// Move
+let s1 = String::from("hi")
+let s2 = s1            // s1 invalid after move
+
+// Borrows
+do show(s:&amp;str){ println!(s)! }         // shared
+do push(s:&amp;mut String){ s.push("!") }    // unique
+
+// Lifetimes (concept)
+fn first&lt;'a&gt;(a:&amp;'a str, _b:&amp;str) -&gt; &amp;'a str { a }
+
+// Copy vs Clone
+let a = 5; let b = a     // Copy
+let s = String::from("x")
+let t = s.clone()        // deep copy
+</code></pre>
+
+<h2 id="modules">12. Modules, Paths, Visibility, Re-exports</h2>
+<pre><code>// src/main.vt
+use math::square
+do main(){ println!(square(9))! }
+
+// src/lib.vt
+pub mod math
+
+// src/math.vt
+pub fn square(x:i32) -&gt; i32 { x*x }
+
+// Aliases & re-exports
+pub use math::square as sq
+use std::collections::{HashMap as Map, HashSet}
+</code></pre>
+<ul>
+  <li><strong>Absolute</strong> paths depuis racine du crate; <strong>relative</strong> depuis le module courant via <code>super::</code>.</li>
+  <li>Seuls les items <code>pub</code> traversent les frontières de module.</li>
+</ul>
+
+<h2 id="generics">13. Generics, Bounds, Where, Associated Types</h2>
+<pre><code>fn max&lt;T: Ord&gt;(a:T, b:T) -&gt; T { if a &gt; b { a } else { b } }
+
+trait IntoIter {
+  type Item
+  fn into_iter(self) -&gt; Iterator[Self::Item]
+}
+
+fn sum_all&lt;T&gt;(it: Iterator[T]) -&gt; T
+where T: Add&lt;Output=T&gt; + Default
+{
+  let mut acc = T::default()
+  for v in it { acc = acc + v }
+  acc
+}
+</code></pre>
+
+<h2 id="traits">14. Traits, Trait Objects, Operator Overloading</h2>
+<pre><code>trait Drawable { do draw(&amp;self) }
+struct Circle { r:f64 }
+impl Drawable for Circle { do draw(&amp;self){ println!("circle")! } }
+
+let scene: Vec[Box[dyn Drawable]] = vec![ Box::new(Circle{ r:2.0 }) ]
+
+// Operator overloading
+trait Add { type Output; fn add(self, rhs:Self) -&gt; Self::Output }
+impl Add for Vec2 {
+  type Output = Vec2
+  fn add(self, rhs:Self) -&gt; Self { Vec2{ x:self.x+rhs.x, y:self.y+rhs.y } }
+}
+</code></pre>
+<p><strong>Coherence (orphan rule)</strong> : impl autorisé si le trait ou le type est local au crate.</p>
+
+<h2 id="pattern">15. Pattern Matching (advanced)</h2>
+<pre><code>// Destructuring tuples/structs/slices + guards + @-bindings
+let tup = (1, (2,3), 4)
+let (a, (b,c), _) = tup
+
+match p {
+  Point{ x: x@0..=10, y } if y &gt; 0 =&gt; println!("x∈[0..10], y&gt;0, x={x}")!,
+  _ =&gt; {}
+}
+
+let arr = [10,20,30,40]
+match arr { [h, .., t] =&gt; println!("head={h}, tail={t}")!, }
+</code></pre>
+
+<h2 id="collections">16. Collections, Iterators, Closures</h2>
+<pre><code>let mut v = Vec[i32]::new()
+v.push(1); v.push(2)
+let mut m = HashMap[String,i32]::new()
+m.insert("a", 1)
+
+let evens_sq = [1,2,3,4,5].iter()
+  .filter(|x| *x % 2 == 0)
+  .map(|x| x*x)
+  .collect&lt;Vec[i32]&gt;()
+
+let add1 = |x:i32| -&gt; i32 { x+1 }
+let base = 10
+let addb = move |x| x + base
+</code></pre>
+
+<h2 id="errors">17. Error Handling (Option/Result/try, custom errors)</h2>
+<pre><code>// Option helpers
+fn safe_get(v:&amp;Vec[i32], i:usize) -&gt; Option[i32] {
+  if i &lt; v.len() { Some(v[i]) } else { None }
+}
+
+// Result + '?' propagation
+fn read_file(p:&amp;Path) -&gt; Result[String, IoErr] {
+  let f = open(p)?
+  f.read_to_string()
+}
+
+// try/catch (panics)
+try risky()
+catch e: Panic =&gt; { println!("panic: {}", e)! }
+
+// try block (composable)
+fn load() -&gt; Result[Config, AppErr] {
+  try {
+    let p = env("CONF_PATH")?
+    let s = read_to_string(p)?
+    parse_conf(s)?
+  }
+}
+</code></pre>
+<p><strong>Custom errors + conversions</strong></p>
+<pre><code>enum AppErr { Io(IoErr), Parse(String) }
+impl From[IoErr] for AppErr { fn from(e:IoErr) -&gt; Self { AppErr::Io(e) } }
+</code></pre>
+
+<h2 id="panic">18. Panics, Abort Strategy & Defer/Drop</h2>
+<ul>
+  <li><strong>Panic</strong>: erreur irrécupérable → unwinding (dev) ou <strong>abort</strong> (prod si configuré).</li>
+  <li><strong>Drop</strong>: ressources libérées à la sortie de portée (RAII).</li>
+  <li><strong>defer</strong>: exécute un bloc à la fin du scope.</li>
+</ul>
+<pre><code>do main(){
+  let file = open("out.txt")!
+  defer { file.close() }
+  file.write("hello")!
+}
+</code></pre>
+
+<h2 id="const">19. Compile-time & Const Evaluation (incl. const generics)</h2>
+<pre><code>const fn fib(n:u32) -&gt; u64 {
+  if n &lt;= 1 { return n as u64 }
+  fib(n-1) + fib(n-2)
+}
+const F13: u64 = fib(13)
+
+struct Fixed[T, const N:usize] { data:[T;N] }
+fn repeat3[T:Copy](x:T) -&gt; Fixed[T,3] { Fixed{ data:[x,x,x] } }
+</code></pre>
+
+<h2 id="macros">20. Macros (hygiene, TT patterns) & Built-ins</h2>
+<pre><code>macro_rules! repeat {
+  ($n:expr, $b:block) =&gt; { for _ in 0..$n $b };
+}
+repeat!(3, { println!("Hi")! })
+
+println!("at {}:{}", file!(), line!())!
+dbg!(expr)          // prints & returns expr (concept)
+stringify!(1 + 2)   // "1 + 2"
+</code></pre>
+
+<h2 id="attrs">21. Attributes & Conditional Compilation</h2>
+<pre><code>@derive(Eq, Ord, Debug)
+struct User { id:u64, name:String }
+
+@inline
+fn sq(x:i32) -&gt; i32 { x*x }
+
+@cfg(windows)
+do platform(){ println!("Windows")! }
+@cfg(unix)
+do platform(){ println!("Unix")! }
+</code></pre>
+
+<h2 id="memory">22. Memory Model, Atomics & Sync Primitives</h2>
+<ul>
+  <li><strong>Happens-before</strong>: ordre via verrous/atomiques.</li>
+  <li><strong>Atomics</strong>: <code>AtomicUsize</code> etc., ordres mémoire <code>Relaxed|Acquire|Release|AcqRel|SeqCst</code>.</li>
+  <li><strong>Verrous</strong>: <code>Mutex</code> (exclusif), <code>RwLock</code> (lecteurs multiples), <code>Condvar</code> (signalisation).</li>
+</ul>
+<pre><code>let data = Arc::new(Mutex::new(0))
+{
+  let d = data.clone()
+  spawn { let mut g = d.lock(); *g += 1 }
+}
+println!(*data.lock())!
+</code></pre>
+
+<h2 id="concurrency">23. Threads, Channels, Async/await, Streams & Timers</h2>
+<pre><code>// Threads + channels
+let (tx, rx) = Channel[i32]::unbounded()
+spawn { tx.send(42) }
+println!(await rx.recv())!
+
+// Async/await + join
+async fn fetch(n:i32) -&gt; i32 { n*n }
+do main(){
+  let a = fetch(2); let b = fetch(3)
+  let (ra, rb) = join(a, b).await
+  println!(ra + rb)!
+}
+
+// Async stream (concept)
+async stream fn count_to(n:i32) -&gt; i32 {
+  let mut i = 0
+  while i &lt;= n { yield i; i += 1 }
+}
+</code></pre>
+
+<h2 id="ffi">24. FFI, ABI, Data Layout (repr/align/packed), Unions & Bitflags</h2>
+<pre><code>@repr(c)
+extern(c) { fn puts(s:*const u8) -&gt; i32 }
+
+@repr(c) @align(8)
+struct Header { len:u32, kind:u32 }
+
+@repr(packed)
+struct Packed { a:u16, b:u32, c:u8 }
+
+@repr(bitflags)
+enum Perm { Read=0b001, Write=0b010, Exec=0b100 }
+
+@repr(c)
+union Word { u:u64, i:i64, f:f64 }
+
+do main(){ unsafe { puts("Hi\\0".as_ptr()) } }
+</code></pre>
+
+<h2 id="testing">25. Testing (unit/doc/property/snapshot)</h2>
+<pre><code>@test
+fn test_add(){ assert_eq!(add(2,2), 4) }
+fn add(a:i32,b:i32)-&gt;i32{ a+b }
+
+/// Squares a number.
+/// # Example
+/// ```
+/// assert_eq!(square(3), 9)
+/// ```
+fn square(x:i32)-&gt;i32{ x*x }
+
+@test
+fn prop_rev(xs: Vec[i32]) { assert_eq!(rev(rev(xs.clone())), xs) }
+
+@test
+fn snapshot_render(){ assert_snapshot!("page", render()) }
+</code></pre>
+
+<h2 id="perf">26. Performance Guidelines</h2>
+<ul>
+  <li>Bench & run en <strong>release</strong> (<code>vitte build --release</code>).</li>
+  <li>Activer LTO (<code>thin</code> ou <code>fat</code>), <code>codegen-units=1</code>.</li>
+  <li>Minimiser les allocations; réutiliser les buffers; préférer slices/itérateurs.</li>
+  <li>Éviter les exceptions comme contrôle de flux ; préférer <code>Result</code>.</li>
+  <li>Mesurer avec <code>vitbench</code>; profiler avec <code>vitprof</code>.</li>
+</ul>
+
+<h2 id="style">27. Style & Naming</h2>
+<ul>
+  <li>Vars/fns : <code>snake_case</code> · Types : <code>PascalCase</code> · Const : <code>SCREAMING_SNAKE_CASE</code>.</li>
+  <li>Un concept par fonction; documenter les APIs publiques (doc tests).</li>
+  <li>Fail-fast ; utiliser <code>Option</code>/<code>Result</code> plutôt que sentinelles.</li>
+</ul>
+
+<h2 id="project">28. Project Layout & Workspaces</h2>
+<pre><code>my_project/
+├── src/
+│  ├── main.vt
+│  ├── utils.vt
+│  └── net.vt
+├── vitpkg.toml
+├── vitbuild.toml
+└── README.md
+
+# Workspaces (root vitpkg.toml)
+[workspace]
+members = ["crates/*", "apps/*"]
+</code></pre>
+
+<h2 id="glossary">29. Glossary</h2>
+<ul>
+  <li><strong>Borrow</strong> — accès temporaire sans transfert d’ownership.</li>
+  <li><strong>Move</strong> — transfert d’ownership (source invalidée).</li>
+  <li><strong>Trait</strong> — interface de comportements.</li>
+  <li><strong>Lifetime</strong> — (concept) région de validité d’une référence.</li>
+  <li><strong>ABI</strong> — binaire interop ; influe sur l’FFI et le layout.</li>
+</ul>
+
+<p class="back"><a href="#top">↑ Back to top</a></p>
+
+<style>
+.toc { background: color-mix(in oklab, var(--card) 85%, var(--bg)); padding:.8rem 1rem; border:1px solid var(--border); border-radius:12px; }
+.toc ol { margin:.4rem 0 0 1.1rem; }
+.toc a, .back a { text-decoration:none; }
+table { border-collapse:collapse; width:100%; }
+th, td { border:1px solid var(--border); padding:.45rem .6rem; text-align:left; }
+thead { background: color-mix(in oklab, var(--card) 85%, var(--bg)); }
+pre code { display:block; }
+.back { margin-top:1.6rem; }
+</style>

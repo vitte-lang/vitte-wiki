@@ -1,160 +1,38 @@
 <!doctype html>
 <html lang="en" data-theme="auto">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Vitte Docs</title>
-  <meta name="description" content="Official Vitte language documentation." />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="theme-color" content="#0f1522" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <link rel="icon" href="assets/logo.svg" sizes="any" type="image/svg+xml" />
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="canonical" href="https://your-domain.tld/docs/">
-  <meta property="og:title" content="Vitte Docs" />
-  <meta property="og:description" content="Fast, friendly systems language." />
-  <meta property="og:image" content="assets/og-cover.png" />
-  <meta property="og:type" content="website" />
-  <meta property="og:locale" content="en_US" />
-
-  <!-- Prevent double fetch: preload then promote to stylesheet; noscript fallback -->
-  <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="styles.css"></noscript>
-
-  <!-- Optional prefetches (adjust) -->
-  <link rel="prefetch" href="content/en/start.md" as="fetch" crossorigin>
-  <link rel="prefetch" href="i18n/en.json" as="fetch" crossorigin>
-  <link rel="prefetch" href="versions.json" as="fetch" crossorigin>
-
-  <script>document.documentElement.classList.add('js')</script>
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"TechArticle",
-    "headline":"Vitte Docs",
-    "about":"Programming language reference and guides",
-    "inLanguage":"en",
-    "isPartOf":{"@type":"CreativeWorkSeries","name":"Vitte Documentation"},
-    "publisher":{"@type":"Organization","name":"Vitte Project"}
-  }
-  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vitte Wiki</title>
+  <meta name="description" content="Vitte Language / Wiki">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="assets/favicon.svg" sizes="any" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
-<a class="skip-link" href="#doc">Skip to content</a>
+  <header class="topbar">
+    <a class="brand" href="index.html">Vitte Wiki</a>
+  </header>
 
-<!-- SVG sprite -->
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
-  <symbol id="ic-github" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.57v-2.2c-3.34.73-4.04-1.61-4.04-1.61-.55-1.41-1.35-1.8-1.35-1.8-1.1-.76.09-.75.09-.75 1.22.09 1.87 1.25 1.87 1.25 1.08 1.86 2.83 1.32 3.52 1.01.11-.79.42-1.32.77-1.62-2.66-.3-5.47-1.34-5.47-5.95 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.62-2.81 5.65-5.49 5.95.43.37.82 1.1.82 2.22v3.29c0 .32.22.69.83.57A12 12 0 0 0 12 .5z"/></symbol>
-  <symbol id="ic-moon" viewBox="0 0 24 24"><path fill="currentColor" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
-  <symbol id="ic-print" viewBox="0 0 24 24"><path fill="currentColor" d="M19 8H5a3 3 0 0 0-3 3v4h4v5h12v-5h4v-4a3 3 0 0 0-3-3zm-3 12H8v-5h8zm3-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM18 3H6v4h12z"/></symbol>
-</svg>
+  <main class="content">
+    <h1>Welcome</h1>
+    <p>Select a page below. All links open the corresponding standalone file in <code>pages/</code>.</p>
 
-<noscript>
-  <div class="callout warn" role="note" aria-live="polite">
-    <div class="title">JavaScript disabled</div>
-    <div class="body">This documentation needs JavaScript to render the navigation and pages.</div>
-  </div>
-</noscript>
-
-<header class="topbar" role="banner">
-  <button id="navToggle" class="icon-btn" aria-label="Toggle navigation" aria-controls="sidebar" aria-expanded="false">☰</button>
-  <a class="brand" href="#/en/start"><img src="assets/logo.svg" alt="" class="logo"> Vitte <span class="muted">Docs</span></a>
-  <div class="topbar-actions">
-    <div class="search" role="search">
-      <input id="q" type="search" placeholder="Search ( / )" aria-label="Search" autocomplete="off" spellcheck="false">
-      <div id="qResults" class="search-results" role="listbox" aria-label="Search results" aria-live="polite"></div>
-      <span class="kbd"><kbd>/</kbd></span>
-    </div>
-    <label class="visually-hidden" for="locale">Language</label>
-    <select id="locale" aria-label="Language">
-      <option value="en" selected>English</option>
-      <option value="fr">Français</option>
-    </select>
-    <label class="visually-hidden" for="version">Version</label>
-    <select id="version" aria-label="Version"></select>
-    <button id="theme" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">
-      <svg width="18" height="18" aria-hidden="true"><use href="#ic-moon"/></svg>
-    </button>
-    <a class="icon-btn" href="print.html" target="_blank" rel="noopener" title="Print / PDF" aria-label="Print / PDF">
-      <svg width="18" height="18" aria-hidden="true"><use href="#ic-print"/></svg>
-    </a>
-    <a class="icon-btn" href="https://github.com/you/vitte-docs" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub repo">
-      <svg width="18" height="18" aria-hidden="true"><use href="#ic-github"/></svg>
-    </a>
-  </div>
-</header>
-
-<div class="layout">
-  <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main">
-    <nav class="nav" id="nav" aria-label="Primary"></nav>
-    <footer class="side-footer" style="padding:.8rem">
-      <a id="editLink" target="_blank" rel="noopener">Edit this page</a>
-      <div class="muted" style="margin-top:.4rem">
-        <small>Offline <span id="offlineState" aria-live="polite" aria-atomic="true">ready</span></small>
-      </div>
-    </footer>
-  </aside>
-
-  <main id="main" class="content" role="main">
-    <nav id="breadcrumb" class="breadcrumb" aria-label="Breadcrumb"></nav>
-    <article id="doc" class="page" tabindex="-1" aria-live="polite"></article>
-    <nav id="pager" class="pager" aria-label="Pagination"></nav>
+    <nav aria-label="Pages">
+      <ul class="page-list">
+        <li><a href="pages/start.html">Start</a></li>
+        <li><a href="pages/faq.html">FAQ</a></li>
+        <li><a href="pages/reference.html">Reference</a></li>
+        <li><a href="pages/syntax.html">Syntax</a></li>
+        <li><a href="pages/download.html">Download</a></li>
+        <li><a href="pages/tooling.html">Tooling</a></li>
+        <li><a href="pages/tour.html">Tour</a></li>
+      </ul>
+    </nav>
   </main>
-</div>
 
-<footer class="footer" role="contentinfo">
-  <div class="container">
-    <span>© 2025 Vitte</span>
-    <span class="sep">•</span>
-    <a href="#/en/reference">Reference</a>
-    <span class="sep">•</span>
-    <a href="#/en/tooling">Tooling</a>
-    <span class="sep">•</span>
-    <a href="#/en/faq">FAQ</a>
-    <span class="sep">•</span>
-    <a href="#" id="reportIssue">Report issue</a>
-  </div>
-</footer>
-
-<div id="toasts" class="hidden" aria-live="polite" aria-atomic="true"></div>
-
-<!-- Templates for app.js -->
-<template id="tpl-pager">
-  <a class="prev" href="#"><span aria-hidden="true">←</span> <span class="label"></span></a>
-  <a class="next" href="#"><span class="label"></span> <span aria-hidden="true">→</span></a>
-</template>
-
-<!-- Offline banner -->
-<div id="offlineBanner" class="callout warn hidden" role="status" aria-live="assertive" style="position:fixed;left:1rem;bottom:1rem;max-width:22rem">
-  <div class="title">Offline</div>
-  <div class="body">You’re viewing cached docs. Some pages may be unavailable.</div>
-</div>
-
-<script>
-  // Detect BASE_URL for GitHub Pages (works at root or subpath)
-  (function(){
-    var p = location.pathname;
-    // Drop trailing file and slash -> base path
-    p = p.replace(/\/index\.html$/, '');
-    if (!p.endsWith('/')) p = p + '/';
-    window.__BASE_URL__ = p.replace(/\/$/, '');
-  })();
-
-  if ('serviceWorker' in navigator) {
-    // Register SW at the same base (so scope is correct on GH Pages)
-    var sw = (window.__BASE_URL__||'') + '/sw.js';
-    navigator.serviceWorker.register(sw).catch(()=>{});
-  }
-</script>
-<script>
-  if (!sessionStorage.getItem('hintShown')) {
-    const t = document.getElementById('toasts');
-    t.classList.remove('hidden');
-    t.textContent = 'Tip: press / to focus search';
-    setTimeout(()=>{ t.classList.add('hidden'); t.textContent=''; }, 2500);
-    sessionStorage.setItem('hintShown','1');
-  }
-</script>
-<script src="app.js" type="module" defer></script>
+  <footer class="footer">
+    <small>© 2025 — Pure HTML/CSS.</small>
+  </footer>
 </body>
 </html>

@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vitte Language — Syntax Tour (Maxi Edition)</title>
+  <meta name="color-scheme" content="light dark">
+  <link rel="stylesheet" href="../assets/syntax.css">
+</head>
+<body>
+  <header class="page-header">
+    <nav class="breadcrumbs">
+      <a href="../index.html">Index</a> / <span>Syntax Tour</span>
+    </nav>
+    <h1>Vitte Language — Syntax Tour (Maxi Edition)</h1>
+    <p class="lead">This is the heavyweight, everything-and-the-kitchen-sink syntax tour. Copy, tweak, ship.</p>
+
+    <div class="tools">
+      <label for="q" class="visually-hidden">Search</label>
+      <input id="q" type="search" placeholder="Search in page (Ctrl+/)" aria-label="Search in page">
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="toc" aria-label="Table of contents">
+      <strong>Contents</strong>
+      <nav id="toc"></nav>
+    </aside>
+
+    <main id="article">
+      <hr>
+
+      <h2>0) Conventions</h2>
+      <ul>
+        <li><code>fn</code> returns a value; <code>do</code> is a procedure (no implicit return).</li>
+        <li>Borrows: <code>&amp;T</code> shared, <code>&amp;mut T</code> unique; moves transfer ownership.</li>
+        <li>Macros end with <code>!</code> (e.g., <code>println!</code>, <code>dbg!</code>).</li>
+        <li>Blocks return their last expression (unless ended by <code>;</code>).</li>
+      </ul>
+
+      <h2>1) Hello World</h2>
+      <pre><code>do main() {
+  println!("Hello, Vitte")!
+}
+</code></pre>
+
+      <h2>2) Bindings, shadowing, types</h2>
+      <pre><code>let name = "Alice"        // immutable
+let mut n = 0             // mutable
+const MAX: usize = 1_000  // compile-time const
+static mut COUNTER = 0    // global (mut requires unsafe)
+
+let x = 42                // inference: i32
+let y: i64 = 42           // explicit
+let speed = 90
+let speed = speed * 1.2   // shadowing (new binding)
+</code></pre>
+
+      <h2>3) Literals &amp; formatting</h2>
+      <pre><code>let b = 0b1010; let h = 0xFF; let big = 1_000_000
+let who = "world"
+println!("Hello, {}", who)!
+println!("x={x}, y={y}", x=1, y=2)!
+println!(stringify!(1 + 2 * 3))!
+</code></pre>
+
+      <h2>4) Core types, tuples, arrays, slices, strings</h2>
+      <pre><code>// primitives
+let ok: bool = true
+let ch: char = 'λ'
+let a: i32 = -7
+let p: f64 = 3.14
+
+// tuples &amp; destructuring
+let t = (200, "OK")
+let (code, msg) = t
+
+// arrays &amp; slices
+let arr = [10, 20, 30, 40, 50]
+let head = &amp;arr[..2]
+let tail = &amp;arr[2..]
+
+// owned vs borrowed strings
+let mut s = String::from("vi")
+s.push("tte")
+do takes(&amp;str) {}
+takes(&amp;s)
+</code></pre>
+
+      <h2>5) Control flow: if/else, let-else, loops, match</h2>
+      <pre><code>// if / else if / else
+if a &gt; 0 { println!("pos")! } else { println!("non-pos")! }
+
+// let-else (exit early if pattern fails)
+let Some(v) = maybe() else { return }
+
+// loops
+for i in 0..5 { println!(i)! }
+while cond() { tick() }
+loop { break }
+
+// match + guards + or-patterns
+match x {
+  0 | 1 =&gt; println!("tiny")!,
+  2..=9 if x % 2 == 0 =&gt; println!("even single digit")!,
+  _ =&gt; println!("big")!,
+}
+</code></pre>
+
+      <h2>6) Functions, returns, inlining</h2>
+      <pre><code>fn add(a: i32, b: i32) -&gt; i32 { a + b }
+do log(msg: &amp;str) { println!(msg)! }
+
+@inline
+fn sq(x: i64) -&gt; i64 { x*x }
+</code></pre>
+
+      <h2>7) Structs, Enums (data), Newtypes, Type aliases</h2>
+      <pre><code>struct Point { x: f64, y: f64 }
+let p = Point{ x:1.0, y:2.0 }
+
+enum Color { Red, Green, Blue }
+enum Shape {
+  Circle{ r: f64 },
+  Rect{ w: f64, h: f64 },
+  Unit
+}
+
+// newtype for type safety
+struct UserId(u64)
+type MapStr = HashMap[String, String]
+
+// matching with data
+match Shape::Rect{ w, h } { 
+  Shape::Rect{ w, h } =&gt; println!("{w}x{h}")!, 
+  _ =&gt; {}
+}
+</code></pre>
+
+      <h2>8) impl: methods, associated fns, builders</h2>
+      <pre><code>struct Vec2 { x: f64, y: f64 }
+impl Vec2 {
+  pub fn new(x: f64, y: f64) -&gt; Self { Self{ x, y } }
+  pub fn len(&amp;self) -&gt; f64 { (self.x*self.x + self.y*self.y).sqrt() }
+  pub fn translate(&amp;mut self, dx:f64, dy:f64) { self.x+=dx; self.y+=dy }
+}
+
+// Builder pattern
+struct Conf { host:String, port:u16, tls:bool }
+impl Conf {
+  pub fn default() -&gt; Self { Self{ host:"localhost".into(), port:443, tls:true } }
+  pub fn host(mut self, h:&amp;str) -&gt; Self { self.host = h.into(); self }
+  pub fn port(mut self, p:u16) -&gt; Self { self.port = p; self }
+}
+let cfg = Conf::default().host("example.com").port(8443)
+</code></pre>
+
+      <h2>9) Modules, visibility, re-exports</h2>
+      <pre><code>mod math {
+  pub fn square(x:i32) -&gt; i32 { x*x }
+  pub(crate) fn secret() {}
+}
+use math::square
+pub use math::square as sq
+</code></pre>
+
+      <h2>10) Generics, where-clauses, associated types</h2>
+      <pre><code>fn max&lt;T: Ord&gt;(a:T, b:T) -&gt; T { if a &gt; b { a } else { b } }
+
+trait IntoIter {
+  type Item
+  fn into_iter(self) -&gt; Iterator[Self::Item]
+}
+
+fn sum_all&lt;T&gt;(it: Iterator[T]) -&gt; T
+where T: Add&lt;Output=T&gt; + Default
+{
+  let mut acc = T::default()
+  for v in it { acc = acc + v }
+  acc
+}
+</code></pre>
+
+      <h2>11) Traits, trait objects, operator overloading</h2>
+      <pre><code>trait Drawable { do draw(&amp;self) }
+
+struct Circle{ r:f64 }
+impl Drawable for Circle { do draw(&amp;self){ println!("circle")! } }
+
+let mut scene: Vec[Box[dyn Drawable]] = vec![]
+scene.push(Box::new(Circle{ r:2.0 }))
+
+// operator overloading via traits
+trait Add { type Output; fn add(self, rhs:Self) -&gt; Self::Output }
+impl Add for Vec2 { 
+  type Output = Vec2
+  fn add(self, rhs:Self) -&gt; Self { Vec2{ x:self.x+rhs.x, y:self.y+rhs.y } }
+}
+</code></pre>
+
+      <h2>12) Closures, captures, iterators &amp; adapters</h2>
+      <pre><code>let add1 = |x:i32| -&gt; i32 { x+1 }
+println!(add1(41))!
+
+let base = 10
+let addb = move |x| x + base
+
+let v = [1,2,3,4,5]
+let evens_sq = v.iter()
+  .filter(|x| *x % 2 == 0)
+  .map(|x| x*x)
+  .collect&lt;Vec[i32]&gt;()
+let sum = v.iter().fold(0, |acc,x| acc+x)
+</code></pre>
+
+      <h2>13) Ownership, borrowing, lifetimes</h2>
+      <pre><code>let s1 = String::from("hi"); let s2 = s1 // move (s1 invalid)
+do show(s:&amp;str){ println!(s)! }
+do push_hi(s:&amp;mut String){ s.push(" hi") }
+
+// conceptual lifetime
+fn first&lt;'a&gt;(a:&amp;'a str, _b:&amp;str) -&gt; &amp;'a str { a }
+</code></pre>
+
+      <h2>14) Options, Results, error propagation, try/catch</h2>
+      <pre><code>fn get(v:&amp;Vec[i32], i:usize) -&gt; Option[i32] {
+  if i &lt; v.len() { Some(v[i]) } else { None }
+}
+
+fn read_file(p:&amp;Path) -&gt; Result[String, IoErr] {
+  let f = open(p)?           // '?' bubbles IoErr
+  f.read_to_string()
+}
+
+try run()
+catch e: Panic =&gt; { println!("panic: {}", e)! }
+</code></pre>
+
+      <h2>15) RAII, Drop, defer</h2>
+      <pre><code>do main(){
+  let file = open("out.txt")!
+  defer { file.close() }   // always runs at scope end
+  file.write("hello")!
+}
+</code></pre>
+
+      <h2>16) Attributes, derives, const-eval</h2>
+      <pre><code>@derive(Eq, Ord, Debug)
+struct User { id:u64, name:String }
+
+const fn fib(n:u32) -&gt; u64 {
+  if n &lt;= 1 { return n as u64 }
+  fib(n-1) + fib(n-2)
+}
+const F13: u64 = fib(13)
+</code></pre>
+
+      <h2>17) Macros (patterns) &amp; helpers</h2>
+      <pre><code>macro_rules! repeat {
+  ($n:expr, $b:block) =&gt; { for _ in 0..$n $b };
+}
+macro_rules! dbgln {
+  ($v:expr) =&gt; { println!("[{}:{}] = {}", file!(), line!(), $v)! };
+}
+repeat!(3, { dbgln!(add(1,2)) })
+</code></pre>
+
+      <h2>18) Async/await, tasks, join, streams</h2>
+      <pre><code>// basic async
+async fn fetch(n:i32) -&gt; i32 { n*n }
+
+do main(){
+  let a = fetch(2)
+  let b = fetch(3)
+  let (ra, rb) = join(a, b).await
+  println!(ra + rb)!
+}
+
+// async stream (conceptual)
+async stream fn count_to(n:i32) -&gt; i32 {
+  let mut i = 0
+  while i &lt;= n { yield i; i += 1 }
+}
+do demo(){
+  let mut s = count_to(3)
+  while let Some(v) = s.next().await { println!(v)! }
+}
+</code></pre>
+
+      <h2>19) Threads, channels, sync (Mutex, Arc)</h2>
+      <pre><code>let (tx, rx) = Channel[i32]::unbounded()
+spawn { tx.send(42) }
+println!(await rx.recv())!
+
+let data = Arc::new(Mutex::new(0))
+{
+  let d = data.clone()
+  spawn {
+    let mut g = d.lock()
+    *g += 1
+  }
+}
+println!(*data.lock())!
+</code></pre>
+
+      <h2>20) Pattern matching deep dive (slices, guards, @)</h2>
+      <pre><code>let arr = [10,20,30,40]
+match arr {
+  [h, .., t] =&gt; println!("head={h}, tail={t}")!,
+}
+
+let tup = (1, (2,3), 4)
+let (a, (b,c), _) = tup
+
+match p {
+  Point{ x: x@0..=10, y } if y &gt; 0 =&gt; println!("x in 0..10, y&gt;0: {x}")!,
+  _ =&gt; {}
+}
+</code></pre>
+
+      <h2>21) Destructuring assignment</h2>
+      <pre><code>let (a, b) = (b, a)     // swap
+let Point{ x, y } = p
+</code></pre>
+
+      <h2>22) File I/O example</h2>
+      <pre><code>fn copy(src:&amp;Path, dst:&amp;Path) -&gt; Result[(), IoErr] {
+  let mut s = open(src)?; let mut d = create(dst)?
+  let mut buf = [0u8; 8192]
+  loop {
+    let n = s.read(&amp;mut buf)?
+    if n == 0 { break }
+    d.write_all(&amp;buf[..n])?
+  }
+  Ok(())
+}
+</code></pre>
+
+      <h2>23) Testing (unit + doc)</h2>
+      <pre><code>@test
+fn test_add(){ assert_eq!(add(2,2), 4) }
+
+/// Squares a number.
+/// # Example
+/// ```
+/// assert_eq!(square(3), 9)
+/// ```
+fn square(x:i32) -&gt; i32 { x*x }
+</code></pre>
+
+      <h2>24) Conditional compilation</h2>
+      <pre><code>@cfg(windows)
+do platform_init(){ println!("Windows")! }
+
+@cfg(unix)
+do platform_init(){ println!("Unix")! }
+</code></pre>
+
+      <h2>25) Custom errors &amp; conversions</h2>
+      <pre><code>enum AppErr { Io(IoErr), Parse(String) }
+impl From[IoErr] for AppErr { fn from(e:IoErr) -&gt; Self { AppErr::Io(e) } }
+
+fn run() -&gt; Result[(), AppErr] {
+  let txt = read_to_string("conf.txt")?   // IoErr =&gt; AppErr
+  parse(txt).map_err(|m| AppErr::Parse(m))
+}
+</code></pre>
+
+      <h2>26) Boxes, Rc/Arc, Phantom types</h2>
+      <pre><code>let bx = Box::new(Point{ x:1.0, y:2.0 })
+let shared = Arc::new(bx)
+let cloned = shared.clone()
+
+// Phantom type example
+struct Id[T](u64, Phantom[T])
+type User = struct{}
+let uid: Id[User] = Id(7, Phantom{})
+</code></pre>
+
+      <h2>27) Formatting, Display, Debug</h2>
+      <pre><code>trait Display { fn fmt(&amp;self, f:&amp;mut Formatter) -&gt; fmt::Result }
+impl Display for Point {
+  fn fmt(&amp;self, f:&amp;mut Formatter) -&gt; fmt::Result { write!(f, "({},{})", self.x, self.y) }
+}
+println!("p = {p}")!
+</code></pre>
+
+      <h2>28) let-chains, if-let/while-let, matches!</h2>
+      <pre><code>// if-let
+if let Some(v) = get(&amp;vec![1,2,3], 1) { println!(v)! }
+
+// while-let
+while let Some(x) = iter.next() { consume(x) }
+
+// matches!
+if matches!(x, 2..=10) { println!("in range")! }
+</code></pre>
+
+      <h2>29) Bitflags, unions, repr/align/packed</h2>
+      <pre><code>@repr(bitflags)
+enum Perm { Read=0b001, Write=0b010, Exec=0b100 }
+
+@repr(c) @align(8)
+union Word {
+  u: u64,
+  i: i64,
+  f: f64
+}
+
+// tightly packed C interop
+@repr(packed)
+struct Header { a:u16, b:u32, c:u8 }
+</code></pre>
+
+      <h2>30) FFI, ABI, unsafe</h2>
+      <pre><code>@repr(c)
+extern(c) {
+  fn puts(s:*const u8) -&gt; i32
+  fn memcpy(dst:*mut u8, src:*const u8, n:usize) -&gt; *mut u8
+}
+
+do main(){
+  unsafe { puts("Salut\n") }
+}
+</code></pre>
+
+      <h2>31) Const generics &amp; arrays</h2>
+      <pre><code>struct Fixed[T, const N:usize] { data:[T;N] }
+fn repeat3[T:Copy](x:T) -&gt; Fixed[T,3] { Fixed{ data:[x,x,x] } }
+</code></pre>
+
+      <h2>32) Zero-cost iter pipelines (example)</h2>
+      <pre><code>fn sum_squares_even(v:&amp;Vec[i64]) -&gt; i64 {
+  v.iter()
+   .filter(|x| *x % 2 == 0)
+   .map(|x| x*x)
+   .sum()
+}
+</code></pre>
+
+      <h2>33) Try blocks (composable error pipelines)</h2>
+      <pre><code>fn load() -&gt; Result[Config, AppErr] {
+  try {
+    let p = env("CONF_PATH")?
+    let s = read_to_string(p)?
+    parse_conf(s)?
+  }
+}
+</code></pre>
+
+      <h2>34) De-dup with specialization-like patterns (concept)</h2>
+      <pre><code>trait ToStr { fn to_str(&amp;self) -&gt; String }
+impl ToStr for String { fn to_str(&amp;self) -&gt; String { self.clone() } }
+impl[T: Display] ToStr for T { fn to_str(&amp;self) -&gt; String { format!("{}", self) } }
+</code></pre>
+
+      <h2>35) Tiny parser demo (pattern + loops)</h2>
+      <pre><code>fn digits_only(s:&amp;str) -&gt; bool {
+  for ch in s.chars() {
+    if !ch.is_ascii_digit() { return false }
+  }
+  true
+}
+</code></pre>
+
+      <hr>
+      <p><em>Pro tip:</em> Pair this page with the <strong>Reference</strong> for APIs and <strong>Tooling</strong> for CI/build. Use <kbd>Ctrl</kbd>+<kbd>/</kbd> to search anywhere.</p>
+    </main>
+  </div>
+
+  <script src="../assets/syntax.js" defer></script>
+</body>
+</html>

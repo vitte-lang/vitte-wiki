@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Getting Started with Vitte (Enterprise-Grade)</title>
+  <meta name="color-scheme" content="light dark">
+  <link rel="stylesheet" href="../assets/doc.css">
+</head>
+<body>
+  <header class="page-header">
+    <nav class="breadcrumbs">
+      <a href="../index.html">Index</a> / <span>Getting Started</span>
+    </nav>
+    <h1>Getting Started with Vitte (Enterprise-Grade)</h1>
+    <p class="lead"><strong>Vitte</strong> blends Python’s clarity, Rust’s safety, and C/ASM control. The goal: <em>ship fast, with correctness and performance by default</em>.</p>
+
+    <div class="tools">
+      <label for="q" class="visually-hidden">Search</label>
+      <input id="q" type="search" placeholder="Search in page (Ctrl+/)" aria-label="Search in page">
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="toc" aria-label="Table of contents">
+      <strong>Contents</strong>
+      <nav id="toc"></nav>
+    </aside>
+
+    <main id="article">
+      <a id="top"></a>
+      <hr>
+
+      <h2 id="prereq">1) Prerequisites</h2>
+      <ul>
+        <li><strong>OS</strong> — Linux x86_64/aarch64, macOS (arm64/x64), Windows 10+ (x64).</li>
+        <li><strong>Disk</strong> — 300–800&nbsp;MB (toolchain + caches).</li>
+        <li><strong>Toolchains</strong> —
+          <ul>
+            <li>Linux: <code>clang</code> ou <code>gcc</code>, <code>make</code>, headers.</li>
+            <li>macOS: Xcode CLT (<code>xcode-select --install</code>).</li>
+            <li>Windows: MSVC Build Tools ou LLVM; PowerShell récent.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h2 id="install">2) Install the Toolchain</h2>
+      <h3>2.1 Unix one-liner</h3>
+      <pre><code>curl -fsSL https://get.vitte.dev/install.sh | sh
+</code></pre>
+      <h3>2.2 Windows (PowerShell)</h3>
+      <pre><code>iwr https://get.vitte.dev/install.ps1 -UseBasicParsing | iex
+</code></pre>
+      <h3>2.3 Package managers (community)</h3>
+      <ul>
+        <li>Homebrew: <code>brew install vitte</code></li>
+        <li>Nix: <code>nix-env -iA nixpkgs.vitte</code></li>
+        <li>Scoop (Win): <code>scoop install vitte</code></li>
+        <li>Arch AUR: <code>yay -S vitte</code></li>
+      </ul>
+      <h3>2.4 Manual</h3>
+      <ol>
+        <li>Download from <code>vitte.dev/downloads</code></li>
+        <li>Extract, add <code>bin/</code> to <code>PATH</code></li>
+      </ol>
+
+      <h2 id="proxy">3) Corporate / Proxy / Air-gapped</h2>
+      <h3>3.1 Proxy env</h3>
+      <pre><code>export HTTP_PROXY=http://proxy.local:3128
+export HTTPS_PROXY=http://proxy.local:3128
+vitte self update
+</code></pre>
+      <h3>3.2 Private CA</h3>
+      <pre><code>export SSL_CERT_FILE=/etc/ssl/certs/corporate-ca.pem
+</code></pre>
+      <h3>3.3 Air-gapped</h3>
+      <ol>
+        <li>Online: <code>vitpkg vendor --all</code> (lock + vendor deps)</li>
+        <li>Transférer le dossier + toolchain offline</li>
+        <li>Build: <code>VITTE_OFFLINE=1 vitte build --release</code></li>
+      </ol>
+
+      <h2 id="wsl-docker">4) WSL &amp; Dev Containers</h2>
+      <h3>4.1 WSL2</h3>
+      <pre><code>wsl --install
+wsl --set-default-version 2
+wsl.exe -d Ubuntu
+# then install Vitte normally (Linux section)
+</code></pre>
+      <h3>4.2 Dev container (VS Code)</h3>
+      <pre><code>// .devcontainer/devcontainer.json
+{
+  "name": "Vitte Dev",
+  "image": "ghcr.io/vitte/dev:latest",
+  "features": { "ghcr.io/devcontainers/features/common-utils:2": {} }
+}
+</code></pre>
+
+      <h2 id="nix">5) Nix Flakes</h2>
+      <pre><code># flake.nix (excerpt)
+{
+  description = "Vitte app";
+  outputs = { self, nixpkgs, ... }:
+  let pkgs = nixpkgs.legacyPackages.x86_64-linux;
+  in {
+    devShells.x86_64-linux.default = pkgs.mkShell {
+      buildInputs = [ pkgs.vitte pkgs.clang ];
+    };
+  };
+}
+</code></pre>
+
+      <h2 id="path">6) PATH, Shell &amp; Completion</h2>
+      <pre><code># PATH (Bash/Zsh) — adapt to your shell
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+
+# Enable completion (if offered by your install)
+vitte completions bash | sudo tee /etc/bash_completion.d/vitte
+vitte completions zsh  | sudo tee /usr/local/share/zsh/site-functions/_vitte
+</code></pre>
+
+      <h2 id="verify">7) Verify, Self-Update, Uninstall</h2>
+      <pre><code>vitte --version
+vitte help
+vitte self update
+vitte self uninstall   # if installed via script
+</code></pre>
+
+      <h2 id="newproj">8) Create or Init a Project</h2>
+      <pre><code># Scaffold
+vitte new hello
+cd hello
+
+# Init in an existing folder
+mkdir -p myapp && cd myapp
+vitte init
+</code></pre>
+
+      <h2 id="templates">9) Project Templates</h2>
+      <pre><code># Official templates
+vitte new web --template web-http
+vitte new cli --template minimal-cli
+
+# Custom URL (git)
+vitte new acme --template https://github.com/acme/vitte-template
+</code></pre>
+
+      <h2 id="layout">10) Layouts</h2>
+      <h3>10.1 Standard</h3>
+      <pre><code>hello/
+├─ src/
+│  ├─ main.vt
+│  └─ lib.vt
+├─ vitpkg.toml
+├─ vitbuild.toml
+└─ README.md
+</code></pre>
+      <h3>10.2 Minimal</h3>
+      <pre><code>hello/
+└─ main.vt   # compile: vittec main.vt -o hello
+</code></pre>
+
+      <h2 id="hello">11) Your First Program</h2>
+      <pre><code>do main() {
+  println!("Hello, Vitte")!
+}
+</code></pre>
+
+      <h2 id="multi">12) Multi-file Example (modules)</h2>
+      <pre><code>// src/main.vt
+use math::square
+do main() { println!(square(12))! }
+
+// src/lib.vt
+pub mod math
+
+// src/math.vt
+pub fn square(x: i32) -> i32 { x*x }
+</code></pre>
+
+      <h2 id="runbuild">13) Run, Profiles &amp; Release</h2>
+      <pre><code>vitte run                 # dev profile (fast compile)
+vitte build --release     # O3/LTO as configured
+vitte build --profile perf
+</code></pre>
+      <p><strong>Tip:</strong> For CLI apps, prefer <em>thin LTO</em> and <code>codegen-units=1</code> in <code>vitbuild.toml</code> for maximum perf.</p>
+
+      <h2 id="config">14) Configuration Files</h2>
+      <h3>14.1 <code>vitpkg.toml</code> (manifest)</h3>
+      <pre><code>[package]
+name = "hello"
+version = "0.1.0"
+edition = "2025"
+license = "MIT"
+
+[dependencies]
+serde = "^1.0"
+
+[features]
+default = []
+json = ["serde"]
+
+[profile.dev]
+opt-level = 0
+debug = true
+overflow-checks = true
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = "symbols"
+codegen-units = 1
+panic = "abort"
+</code></pre>
+      <h3>14.2 <code>vitbuild.toml</code> (build)</h3>
+      <pre><code>[project]
+workspace = false
+
+[target."x86_64-unknown-linux-gnu"]
+linker = "clang"
+
+[target."aarch64-apple-darwin"]
+sdk = "macos"
+
+[profile.perf]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+
+[scripts]
+gen = "scripts/generate_assets.sh"
+
+[hooks]
+postbuild = "vitdoc build --theme clean"
+
+[env]
+VITTE_LOG = "info"
+</code></pre>
+
+      <h2 id="deps">15) Dependencies, Features &amp; Private Registries</h2>
+      <pre><code>vitpkg add serde
+vitpkg update
+vitpkg tree
+vitpkg add httpx --feature tls
+
+# Private registry
+[registries]
+corp = "https://pkg.corp.local/index"
+[source]
+default = "corp"
+</code></pre>
+
+      <h2 id="workspace">16) Workspaces / Monorepos</h2>
+      <pre><code># vitpkg.toml (root)
+[workspace]
+members = ["crates/*", "apps/*"]
+</code></pre>
+
+      <h2 id="editor">17) Editor, LSP &amp; Diagnostics</h2>
+      <pre><code>vitte lsp install
+vitte lsp doctor
+</code></pre>
+      <ul>
+        <li>VS Code (Vitte extension), JetBrains plugin, Neovim/Emacs via LSP</li>
+        <li>Tip: enable in-editor <em>onSave</em> format + lint</li>
+      </ul>
+
+      <h2 id="fmtlint">18) Format &amp; Lint</h2>
+      <pre><code>vitte fmt
+vitte lint
+vitte lint --fix
+</code></pre>
+
+      <h2 id="test">19) Testing</h2>
+      <pre><code># All tests
+vitte test
+# Filter + show output
+vitte test --filter parser --nocapture
+</code></pre>
+      <h3>19.1 Unit</h3>
+      <pre><code>@test
+fn test_add() { assert_eq!(add(2,2), 4) }
+fn add(a:i32, b:i32) -> i32 { a+b }
+</code></pre>
+      <h3>19.2 Doc tests</h3>
+      <pre><code>/// Squares a number.
+/// # Example
+/// ```
+/// assert_eq!(square(3), 9)
+/// ```
+fn square(x:i32) -> i32 { x*x }
+</code></pre>
+      <h3>19.3 Integration</h3>
+      <pre><code>// tests/http_test.vt
+@test
+fn api_smoke() {
+  let ok = ping_api("https://example.test")
+  assert!(ok)
+}
+</code></pre>
+
+      <h2 id="debug">20) Debugging, Logs &amp; Structured Logging</h2>
+      <pre><code># Symbols
+vitte build --debug
+
+# gdb / lldb
+gdb ./target/debug/hello
+lldb ./target/debug/hello
+
+# Verbose logs
+VITTE_LOG=debug vitte run
+</code></pre>
+      <p><strong>Structured logging</strong> (JSON):</p>
+      <pre><code>VITTE_LOG_FORMAT=json vitte run
+</code></pre>
+
+      <h2 id="perf">21) Performance: Bench, Profile, Trace</h2>
+      <pre><code># Bench
+vitbench run --filter "json_*"
+
+# Profile + flamegraph
+vitprof record -- ./target/release/hello
+vitprof flamegraph --open
+
+# Quick trace (conceptual)
+VITTE_TRACE=on vitte run
+</code></pre>
+      <p><strong>Perf tips:</strong> enable LTO (thin/fat), set <code>codegen-units=1</code>, avoid needless heap allocs, use iterators &amp; slices, prefer <code>Result</code> over exceptions.</p>
+
+      <h2 id="cross">22) Cross-Compilation</h2>
+      <pre><code>vitte build --target x86_64-pc-windows-msvc
+vitte build --target aarch64-apple-darwin --release
+</code></pre>
+
+      <h2 id="offline">23) Offline / Vendor</h2>
+      <pre><code>vitpkg vendor
+VITTE_OFFLINE=1 vitte build --release
+</code></pre>
+
+      <h2 id="ci">24) CI Quickstarts</h2>
+      <h3>24.1 GitHub Actions</h3>
+      <pre><code>name: ci
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl -fsSL https://get.vitte.dev/install.sh | sh
+      - run: vitte build --release
+      - run: vitte test
+</code></pre>
+      <h3>24.2 GitLab CI (cache + artifacts)</h3>
+      <pre><code>stages: [build, test]
+cache: { key: "$CI_COMMIT_REF_SLUG", paths: [".vitte/"] }
+build:
+  stage: build
+  image: alpine:latest
+  script:
+    - wget -qO- https://get.vitte.dev/install.sh | sh
+    - vitte build --release
+  artifacts: { paths: ["target/release/"], expire_in: 1 week }
+test:
+  stage: test
+  script: [ "vitte test" ]
+</code></pre>
+
+      <h2 id="git-tools">25) .gitignore, .editorconfig, Pre-commit</h2>
+      <h3>.gitignore</h3>
+      <pre><code>.vitte/
+target/
+*.log
+*.tmp
+</code></pre>
+      <h3>.editorconfig (consistency)</h3>
+      <pre><code>root = true
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+</code></pre>
+      <h3>Pre-commit (optional)</h3>
+      <pre><code># .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: vitte-fmt
+        name: vitte fmt
+        entry: vitte fmt
+        language: system
+      - id: vitte-lint
+        name: vitte lint
+        entry: vitte lint
+        language: system
+</code></pre>
+
+      <h2 id="faq">26) FAQ &amp; Common Errors</h2>
+      <table>
+        <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td><code>command not found</code></td><td>PATH not updated</td><td>Add <code>~/.local/bin</code> to PATH, restart shell</td></tr>
+          <tr><td>Linker errors</td><td>Missing system toolchain</td><td>Install clang/lld or MSVC; set <code>[target.*].linker</code></td></tr>
+          <tr><td>LSP sluggish</td><td>Cache or antivirus</td><td><code>vitte lsp doctor</code>, clear <code>.vitte/cache</code>, AV exclude</td></tr>
+          <tr><td>Proxy issues</td><td>Env not set</td><td>Set <code>HTTP(S)_PROXY</code>, <code>SSL_CERT_FILE</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="cheats">27) Cheat-Sheet</h2>
+      <table>
+        <thead><tr><th>Task</th><th>Command</th></tr></thead>
+        <tbody>
+          <tr><td>New project</td><td><code>vitte new app</code></td></tr>
+          <tr><td>Run</td><td><code>vitte run</code></td></tr>
+          <tr><td>Release build</td><td><code>vitte build --release</code></td></tr>
+          <tr><td>Add dep</td><td><code>vitpkg add &lt;name&gt;</code></td></tr>
+          <tr><td>Format &amp; Lint</td><td><code>vitte fmt</code> • <code>vitte lint</code></td></tr>
+          <tr><td>Tests</td><td><code>vitte test --filter "name" --nocapture</code></td></tr>
+          <tr><td>Docs</td><td><code>vitdoc build --open</code></td></tr>
+          <tr><td>Offline</td><td><code>vitpkg vendor</code> ⇒ <code>VITTE_OFFLINE=1</code></td></tr>
+        </tbody>
+      </table>
+
+      <p class="back"><a href="#top">↑ Back to top</a></p>
+    </main>
+  </div>
+
+  <script src="../assets/doc.js" defer></script>
+</body>
+</html>

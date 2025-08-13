@@ -1,0 +1,274 @@
+<h1>Download Vitte</h1>
+<p>Get the Vitte toolchain for your platform. This page includes quick installers, packages, verification, enterprise notes, and troubleshooting.</p>
+
+<nav aria-label="Contents">
+  <ol>
+    <li><a href="#prereq">System Requirements & Supported Targets</a></li>
+    <li><a href="#channels">Release Channels</a></li>
+    <li><a href="#quick">Quick Install</a></li>
+    <li><a href="#packages">Installers and Packages</a></li>
+    <li><a href="#silent">Unattended / Silent Install</a></li>
+    <li><a href="#verify">Verify Downloads</a></li>
+    <li><a href="#path">PATH and Shell Setup</a></li>
+    <li><a href="#update">Update, Pinning, and Uninstall</a></li>
+    <li><a href="#packman">Package Managers</a></li>
+    <li><a href="#wsl">WSL & Containers</a></li>
+    <li><a href="#enterprise">Enterprise / Proxy / Mirrors</a></li>
+    <li><a href="#offline">Offline / Air-gapped</a></li>
+    <li><a href="#ci">CI Integration</a></li>
+    <li><a href="#troubleshoot">Troubleshooting</a></li>
+    <li><a href="#checksums">Checksums and Signatures</a></li>
+  </ol>
+</nav>
+
+<hr>
+
+<h2 id="prereq">System Requirements & Supported Targets</h2>
+<h3>Minimum</h3>
+<ul>
+  <li>CPU: x86_64 or aarch64</li>
+  <li>RAM: 2 GB (8 GB recommended for large builds)</li>
+  <li>Disk: 500 MB (toolchain) + build artifacts</li>
+  <li>OS: Linux (glibc), macOS 12+, Windows 10/11 x64</li>
+</ul>
+<h3>Common targets (triples)</h3>
+<ul>
+  <li><code>x86_64-unknown-linux-gnu</code>, <code>aarch64-unknown-linux-gnu</code></li>
+  <li><code>aarch64-apple-darwin</code>, <code>x86_64-apple-darwin</code></li>
+  <li><code>x86_64-pc-windows-msvc</code></li>
+</ul>
+
+<hr>
+
+<h2 id="channels">Release Channels</h2>
+<p>Choose a channel:</p>
+<ul>
+  <li><strong>stable</strong> — default, thoroughly tested.</li>
+  <li><strong>nightly</strong> — latest features, may break.</li>
+  <li><strong>LTS</strong> — long-term support, slow-moving.</li>
+</ul>
+<p>Install script supports flags (examples):</p>
+<pre><code># Unix-like
+curl -fsSL https://vitte-lang.org/install.sh | sh -s -- --channel stable --prefix "$HOME/.local"
+
+# Windows PowerShell
+iwr https://vitte-lang.org/install.ps1 -UseBasicParsing | iex
+vitte self channel set nightly
+</code></pre>
+
+<hr>
+
+<h2 id="quick">Quick Install</h2>
+<h3>Unix-like (Linux, macOS)</h3>
+<pre><code>curl -fsSL https://vitte-lang.org/install.sh | sh</code></pre>
+
+<h3>Windows (PowerShell)</h3>
+<pre><code>iwr https://vitte-lang.org/install.ps1 -UseBasicParsing | iex</code></pre>
+
+<p>After installation, confirm:</p>
+<pre><code>vitte --version
+vitte help</code></pre>
+
+<hr>
+
+<h2 id="packages">Installers and Packages</h2>
+<p>Choose an installer for your platform. File names are illustrative; use the latest release.</p>
+
+<h3>Linux</h3>
+<ul>
+  <li><a href="https://vitte-lang.org/downloads/vitte-{latest}-x86_64-unknown-linux-gnu.tar.gz">x86_64 tar.gz</a></li>
+  <li><a href="https://vitte-lang.org/downloads/vitte-{latest}-aarch64-unknown-linux-gnu.tar.gz">aarch64 tar.gz</a></li>
+</ul>
+
+<h3>macOS</h3>
+<ul>
+  <li><a href="https://vitte-lang.org/downloads/vitte-{latest}-aarch64-apple-darwin.pkg">Apple Silicon installer</a></li>
+  <li><a href="https://vitte-lang.org/downloads/vitte-{latest}-x86_64-apple-darwin.pkg">Intel installer</a></li>
+  <li><a href="https://vitte-lang.org/downloads/vitte-{latest}-universal-apple-darwin.tar.gz">Universal tarball</a></li>
+</ul>
+
+<h3>Windows</h3>
+<ul>
+  <li><a href="https://vitte-lang.org/downloads/vitte-{latest}-x86_64-pc-windows-msvc.msi">x64 MSI</a></li>
+  <li><a href="https://vitte-lang.org/downloads/vitte-{latest}-x86_64-pc-windows-msvc.zip">x64 ZIP</a></li>
+</ul>
+
+<p>Manual install from archive:</p>
+<ol>
+  <li>Extract the archive.</li>
+  <li>Add the <code>bin/</code> directory to your <a href="#path">PATH</a>.</li>
+</ol>
+
+<hr>
+
+<h2 id="silent">Unattended / Silent Install</h2>
+<h3>Windows (MSI)</h3>
+<pre><code>msiexec /i vitte-{latest}-x86_64-pc-windows-msvc.msi /qn /norestart INSTALLDIR="C:\Vitte"</code></pre>
+<h3>macOS (pkg)</h3>
+<pre><code>sudo installer -pkg vitte-{latest}-aarch64-apple-darwin.pkg -target /</code></pre>
+<h3>Linux (tarball)</h3>
+<pre><code>tar -xzf vitte-{latest}-x86_64-unknown-linux-gnu.tar.gz -C /opt/vitte
+echo 'export PATH=/opt/vitte/bin:$PATH' | sudo tee /etc/profile.d/vitte.sh</code></pre>
+
+<hr>
+
+<h2 id="verify">Verify Downloads</h2>
+<p>Each download has accompanying <code>.sha256</code> and <code>.asc</code> files.</p>
+
+<h3>Linux/macOS</h3>
+<pre><code># checksum
+shasum -a 256 vitte-{latest}-x86_64-unknown-linux-gnu.tar.gz
+cat vitte-{latest}-x86_64-unknown-linux-gnu.tar.gz.sha256
+
+# signature (requires gpg and the Vitte release key)
+gpg --keyserver hkps://keys.openpgp.org --recv-keys &lt;VITTE_PUBKEY_ID&gt;
+gpg --fingerprint &lt;VITTE_PUBKEY_ID&gt;   # verify the fingerprint from the official site
+gpg --verify vitte-{latest}.tar.gz.asc vitte-{latest}.tar.gz</code></pre>
+
+<h3>Windows</h3>
+<pre><code>certutil -hashfile vitte-{latest}-x86_64-pc-windows-msvc.msi SHA256
+type vitte-{latest}-x86_64-pc-windows-msvc.msi.sha256</code></pre>
+
+<hr>
+
+<h2 id="path">PATH and Shell Setup</h2>
+<h3>Linux/macOS</h3>
+<pre><code># Bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && . ~/.bashrc
+
+# Zsh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && . ~/.zshrc
+
+# Fish
+set -Ua fish_user_paths $HOME/.local/bin</code></pre>
+
+<h3>Windows</h3>
+<pre><code># PowerShell (current user)
+$UserBin = "$env:USERPROFILE\.vitte\bin"
+[System.Environment]::SetEnvironmentVariable("Path", "$env:Path;$UserBin", "User")</code></pre>
+
+<hr>
+
+<h2 id="update">Update, Pinning, and Uninstall</h2>
+<pre><code># Update to latest
+vitte self update
+
+# Pin a specific version
+vitte self pin 1.4.3
+
+# Switch channel (stable/nightly/lts)
+vitte self channel set nightly
+
+# Uninstall (script-based installs)
+vitte self uninstall</code></pre>
+
+<hr>
+
+<h2 id="packman">Package Managers</h2>
+<p>Community-maintained packages may be available.</p>
+<ul>
+  <li>Homebrew: <code>brew install vitte</code></li>
+  <li>Nix: <code>nix-env -iA nixpkgs.vitte</code></li>
+  <li>Scoop: <code>scoop install vitte</code></li>
+  <li>Arch AUR: <code>yay -S vitte</code></li>
+</ul>
+
+<hr>
+
+<h2 id="wsl">WSL & Containers</h2>
+<h3>WSL2 (Windows)</h3>
+<pre><code>wsl --install
+wsl --set-default-version 2
+wsl.exe -d Ubuntu
+# inside WSL:
+curl -fsSL https://vitte-lang.org/install.sh | sh</code></pre>
+<h3>Containers (dev image)</h3>
+<pre><code>docker run -it --rm ghcr.io/vitte/toolchain:latest vitte --version</code></pre>
+
+<hr>
+
+<h2 id="enterprise">Enterprise / Proxy / Mirrors</h2>
+<p>Corporate networks often require proxies and custom CA bundles.</p>
+<pre><code># Proxy
+export HTTP_PROXY=http://proxy.local:3128
+export HTTPS_PROXY=http://proxy.local:3128
+
+# Custom CA
+export SSL_CERT_FILE=/etc/ssl/certs/corporate-ca.pem
+
+# Official mirror override (if provided)
+export VITTE_MIRROR=https://mirror.corp.local/vitte
+
+# Disable auto-update
+export VITTE_NO_UPDATE=1</code></pre>
+
+<hr>
+
+<h2 id="offline">Offline / Air-gapped</h2>
+<ol>
+  <li>On a connected machine: <code>vitpkg vendor --all</code> in your project to vendor dependencies.</li>
+  <li>Download the toolchain archives and signatures for your target(s).</li>
+  <li>Transfer the toolchain and the project (including <code>vendor/</code>) to the offline environment.</li>
+  <li>Install locally from archives and set offline mode:</li>
+</ol>
+<pre><code>VITTE_OFFLINE=1 vitte build --release</code></pre>
+
+<hr>
+
+<h2 id="ci">CI Integration</h2>
+<h3>GitHub Actions</h3>
+<pre><code>name: ci
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl -fsSL https://vitte-lang.org/install.sh | sh
+      - run: vitte build --release
+      - run: vitte test</code></pre>
+
+<hr>
+
+<h2 id="troubleshoot">Troubleshooting</h2>
+<details>
+  <summary>Command not found after install</summary>
+  <p>Add the installation <code>bin/</code> directory to your PATH and restart your shell. See <a href="#path">PATH setup</a>.</p>
+</details>
+<details>
+  <summary>Permission denied when running installer</summary>
+  <p>Make the script executable (<code>chmod +x</code>), or run via the shell as shown in the quick install.</p>
+</details>
+<details>
+  <summary>macOS: “cannot be opened because it is from an unidentified developer”</summary>
+  <p>Use the signed installer when possible. If using a tarball, you may need to clear quarantine: <code>xattr -dr com.apple.quarantine /path/to/vitte</code>.</p>
+</details>
+<details>
+  <summary>Windows SmartScreen blocked</summary>
+  <p>Use the MSI installer. If blocked, verify the signature and choose “Run anyway” only if verification succeeds.</p>
+</details>
+<details>
+  <summary>Linker or SDK errors</summary>
+  <p>Install a system toolchain (clang/lld or MSVC). Configure the linker in <code>vitbuild.toml</code> if needed. Ensure platform SDKs are present.</p>
+</details>
+<details>
+  <summary>Behind a proxy or TLS interception</summary>
+  <p>Set <code>HTTP_PROXY</code>, <code>HTTPS_PROXY</code>, and <code>SSL_CERT_FILE</code> to your corporate CA bundle. See <a href="#enterprise">Enterprise</a>.</p>
+</details>
+<details>
+  <summary>Antivirus slows builds on Windows</summary>
+  <p>Exclude the build cache directories (e.g., <code>.vitte/</code>, <code>target/</code>) from real-time scanning.</p>
+</details>
+
+<hr>
+
+<h2 id="checksums">Checksums and Signatures</h2>
+<p>Downloads include checksum and signature files alongside the artifacts:</p>
+<ul>
+  <li><code>vitte-{version}-&lt;target&gt;.tar.gz.sha256</code> and <code>.asc</code></li>
+  <li><code>vitte-{version}-&lt;target&gt;.pkg.sha256</code> and <code>.asc</code></li>
+  <li><code>vitte-{version}-&lt;target&gt;.msi.sha256</code> and <code>.asc</code></li>
+</ul>
+<p>Only install artifacts that pass checksum and signature verification. Always verify the PGP key fingerprint from the official website or an independent channel before trusting signatures.</p>
+
+<p><strong>Tip:</strong> For platform-specific guides and release notes, see the Reference, Syntax, Tooling, and Tour sections.</p>
